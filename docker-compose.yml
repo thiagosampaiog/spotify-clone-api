@@ -10,5 +10,12 @@ services:
         environment:
             MONGO_INITDB_ROOT_USERNAME: spotify
             MONGO_INITDB_ROOT_PASSWORD: spotify
+    # spotify:
+    #     ports: 
+    #         - "3000:3000"
+    #     depends_on: 
+    #         - mongodb
+    #     environment:
+    #         DATABASE_URL: mongodb://spotify:spotify@mongodb:27017
 volumes:
     mongodb:
