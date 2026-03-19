@@ -53,10 +53,8 @@ export class ArtistsService {
   }
 
   async delete(artistId: string): Promise<void> {
-    const deletedArtist = await this.artistModel
-      .findByIdAndDelete(artistId)
-      .exec();
-    if (!deletedArtist) {
+    const deleted = await this.artistModel.findByIdAndDelete(artistId).exec();
+    if (!deleted) {
       throw new NotFoundException(`Artist ${artistId} not found`);
     }
   }
