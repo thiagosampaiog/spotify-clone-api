@@ -8,7 +8,7 @@ export class User {
   @Prop({ index: true, unique: true, required: true })
   name: string;
 
-  @Prop()
+  @Prop({ required: true })
   imageUrl: string;
 }
 

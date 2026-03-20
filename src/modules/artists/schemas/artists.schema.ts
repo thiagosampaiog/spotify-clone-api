@@ -1,18 +1,18 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import type { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { HydratedDocument } from 'mongoose'
 
-export type ArtistDocument = HydratedDocument<Artist>;
+export type ArtistDocument = HydratedDocument<Artist>
 
 @Schema({ timestamps: true })
 export class Artist {
   @Prop({ required: true, index: true, unique: true, trim: true })
-  name: string;
+  name: string
 
-  @Prop()
-  bio: string;
+  @Prop({ required: true })
+  bio: string
 
-  @Prop()
-  imageUrl: string;
+  @Prop({ required: true })
+  imageUrl: string
 }
 
-export const ArtistSchema = SchemaFactory.createForClass(Artist);
+export const ArtistSchema = SchemaFactory.createForClass(Artist)

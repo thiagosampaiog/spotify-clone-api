@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/users.schema';
-import type { Model } from 'mongoose';
-import type { CreateUserDto } from './dto/create-user.dto';
-import type { UpdateUserDto } from './dto/update-user.dto';
+import { Model } from 'mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { MONGO_ERRORS } from '@app/common/constants';
 
 @Injectable()
@@ -28,7 +28,8 @@ export class UserService {
 
   async create(input: CreateUserDto): Promise<User> {
     try {
-      const created = await this.userModel.create(input);
+      const created = new this.userModel(input);
+      await created.save();
       return created.toObject();
     } catch (error) {
       if (error.code === MONGO_ERRORS.DUPLICATE_KEY) {

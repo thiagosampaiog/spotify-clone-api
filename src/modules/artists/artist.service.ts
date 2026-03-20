@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Artist } from './schemas/artists.schema';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { MONGO_ERRORS } from '@app/common/constants';
-import type { UpdateArtistDto } from './dto/update-artist.dto';
+import { UpdateArtistDto } from './dto/update-artist.dto';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
