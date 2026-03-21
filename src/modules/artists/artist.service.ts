@@ -1,9 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { Model } from 'mongoose'
-import { Artist } from './schemas/artists.schema'
-import { CreateArtistDto } from './dto/create-artist.dto'
+import { Artist } from './contract/artists.schema'
+import { CreateArtistDto, type UpdateArtistDto } from './contract/artist.dto'
 import { MONGO_ERRORS } from '@app/common/constants'
-import { UpdateArtistDto } from './dto/update-artist.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { Status } from '@app/common/enums'
 
@@ -26,12 +25,12 @@ export class ArtistsService {
 
   async create(input: CreateArtistDto): Promise<Artist> {
     try {
-      const artist = { ...input, status: Status.ACTIVE }
-      const created = await this.artistModel.create(artist)
-      return created.toObject()
+      const entity = new this.artistModel({ ...input, status: Status.ACTIVE })
+      await entity.save()
+      return entity.toObject()
     } catch (error) {
       if (error.code === MONGO_ERRORS.DUPLICATE_KEY) {
-        throw new ConflictException('Artist with this name already exists.')
+        throw new ConflictException('Artist already exists.')
       }
       throw error
     }

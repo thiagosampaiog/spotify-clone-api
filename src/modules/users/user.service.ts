@@ -1,9 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { User } from './schemas/users.schema'
+import { User } from './contract/users.schema'
 import { Model } from 'mongoose'
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
+import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
 import { MONGO_ERRORS } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 
@@ -25,11 +24,9 @@ export class UserService {
 
   async create(input: CreateUserDto): Promise<User> {
     try {
-      const user = { ...input, status: Status.ACTIVE }
-      const created = new this.userModel(user)
-      
-      await created.save()
-      return created.toObject()
+      const entity = new this.userModel({ ...input, status: Status.ACTIVE })
+      await entity.save()
+      return entity.toObject()
     } catch (error) {
       if (error.code === MONGO_ERRORS.DUPLICATE_KEY) {
         throw new ConflictException('User already exists')

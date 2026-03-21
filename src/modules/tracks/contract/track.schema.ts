@@ -8,7 +8,6 @@ export type TrackDocument = mongoose.HydratedDocument<Track>
 export class Track {
   @Prop({ required: true })
   name: string
-
   // this image is from album
   @Prop({ required: true })
   imageUrl: string

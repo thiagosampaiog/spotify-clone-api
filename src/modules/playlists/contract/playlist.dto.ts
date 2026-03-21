@@ -1,5 +1,4 @@
 import { PartialType } from "@nestjs/swagger";
-import { CreatePlaylistDto } from "./create-playlist.dto";
 
-
+export class CreatePlaylistDto {}
 export class UpdatePlaylistDto extends PartialType(CreatePlaylistDto){}
