@@ -21,11 +21,16 @@ export class TrackService {
 
   async create(input: CreateTrackDto): Promise<Track> {
     try {
+      // TODO: transaction, mongo session
+
       const [album, artists] = await Promise.all([
         this.albumModel.findById(input.album).lean().exec(),
-        await this.artistModel.find({
-          _id: { $in: input.artists }
-        })
+        this.artistModel
+          .find({
+            _id: { $in: input.artists }
+          })
+          .lean()
+          .exec()
       ])
 
       if (!album) throw new NotFoundException(`Album not found`)
@@ -35,13 +40,15 @@ export class TrackService {
 
       const entity = new this.trackModel({
         name: input.name,
-        audioUrl: input.audioUrl,
-        album: album._id,
+        album: input.album,
         artists: input.artists,
+        audioUrl: input.audioUrl,
         imageUrl: album.imageUrl,
         durationMs: 1000,
         status: Status.ACTIVE
       })
+
+      await entity.save()
 
       this.albumModel
         .findByIdAndUpdate(album._id, {
@@ -52,7 +59,6 @@ export class TrackService {
         })
         .exec()
 
-      await entity.save()
       return entity.toObject()
     } catch (error) {
       if (error.code === MONGO_ERRORS.DUPLICATE_KEY) {
@@ -61,4 +67,15 @@ export class TrackService {
       throw error
     }
   }
+
+  async findById(trackId: string): Promise<Track> {
+    const entity = await this.findById(trackId)
+    if (!entity) throw new NotFoundException(`Track ${trackId} not found`)
+    return entity
+  }
+
+  async findAll(): Promise<Track[]> {
+    return this.trackModel.find()
+  }
+  
 }

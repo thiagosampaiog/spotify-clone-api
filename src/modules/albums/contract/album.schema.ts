@@ -39,3 +39,8 @@ AlbumSchema.index({ name: 1 })
 AlbumSchema.index({ genres: 1 })
 // find most recent album by artist
 AlbumSchema.index({ artist: 1, releasedAt: -1 })
+// find album by artist name, must be unique
+AlbumSchema.index(
+  { artist: 1, name: 1 },
+  { unique: true }
+)
