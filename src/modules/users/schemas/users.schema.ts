@@ -1,15 +1,22 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Status } from '@app/common/enums'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { HydratedDocument } from 'mongoose'
 
-export type UserDocument = HydratedDocument<User>;
+export type UserDocument = HydratedDocument<User>
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ index: true, unique: true, required: true })
-  name: string;
+  @Prop({ required: true })
+  name: string
 
   @Prop({ required: true })
-  imageUrl: string;
+  imageUrl: string
+
+  @Prop({ default: Status.ACTIVE, enum: Status })
+  status: Status
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const UserSchema = SchemaFactory.createForClass(User)
+
+// find user by name
+UserSchema.index({ name: 1 })

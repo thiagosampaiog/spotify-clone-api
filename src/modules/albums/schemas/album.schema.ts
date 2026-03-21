@@ -1,15 +1,19 @@
-import { Artist } from '@app/modules/artists/schemas/artists.schema'
-import { Prop, Schema } from '@nestjs/mongoose'
+import { Genres, Status } from '@app/common/enums'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import * as mongoose from 'mongoose'
+
+export type AlbumDocument = mongoose.HydratedDocument<Album>
 
 @Schema({ timestamps: true })
 export class Album {
-  
   @Prop({ required: true })
   name: string
 
   @Prop({ required: true })
   imageUrl: string
+
+  @Prop({ required: true, type: [String], enum: Genres })
+  genres: Genres[]
 
   @Prop({ default: 0 })
   totalTracks: number
@@ -18,5 +22,20 @@ export class Album {
   totalDurationMs: number
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Artist' })
-  artist: Artist
+  artist: mongoose.Types.ObjectId
+
+  @Prop({ required: true })
+  releasedAt: Date
+
+  @Prop({ default: Status.ACTIVE, enum: Status })
+  status: Status
 }
+
+export const AlbumSchema = SchemaFactory.createForClass(Album)
+
+// find album by name
+AlbumSchema.index({ name: 1 })
+// find album by genre
+AlbumSchema.index({ genres: 1 })
+// find most recent album by artist
+AlbumSchema.index({ artist: 1, releasedAt: -1 })
