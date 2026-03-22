@@ -5,6 +5,7 @@ import { ArtistModule } from './modules/artists/artist.module'
 import { UserModule } from './modules/users/user.module'
 import { AlbumModule } from './modules/albums/album.module'
 import { TrackModule } from './modules/tracks/track.module'
+import { PlaylistModule } from './modules/playlists/playlist.module'
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { TrackModule } from './modules/tracks/track.module'
     ArtistModule,
     UserModule,
     AlbumModule,
-    TrackModule
+    TrackModule,
+    PlaylistModule
   ]
 })
 export class AppModule {}

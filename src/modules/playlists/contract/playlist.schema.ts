@@ -1,6 +1,4 @@
 import { Status } from '@app/common/enums'
-import { Track } from '@app/modules/tracks/contract/track.schema'
-import { User } from '@app/modules/users/contract/users.schema'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import * as mongoose from 'mongoose'
 
