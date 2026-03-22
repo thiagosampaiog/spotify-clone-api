@@ -9,8 +9,14 @@ export class Playlist {
   @Prop({ required: true })
   name: string
 
-  @Prop({ required: true, type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }] })
-  tracks: mongoose.Types.ObjectId[]
+  @Prop({ default: null, type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }] })
+  tracks?: mongoose.Types.ObjectId[]
+
+  @Prop({ default: 0 })
+  totalTracks: number
+
+  @Prop({ default: 0 })
+  totalDurationMs: number
 
   @Prop({ default: null })
   imageUrl: string

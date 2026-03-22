@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/swagger'
-import { ArrayNotEmpty, ArrayUnique, IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator'
+import { ArrayUnique, IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator'
 
 export class CreatePlaylistDto {
   @IsString()
@@ -10,10 +10,10 @@ export class CreatePlaylistDto {
   user: string
 
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayUnique()
   @IsMongoId()
-  tracks: string[]
+  @IsOptional()
+  tracks?: string[]
 
   @IsString()
   @IsOptional()

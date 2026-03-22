@@ -8,12 +8,17 @@ export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Post()
-  async create(@Body() input: CreatePlaylistDto): Promise<Playlist>{
+  async create(@Body() input: CreatePlaylistDto): Promise<Playlist> {
     return this.playlistService.create(input)
   }
 
   @Get(':id')
-  async findById(@Param('id') playlistId: string): Promise<Playlist>{
+  async findById(@Param('id') playlistId: string): Promise<Playlist> {
     return this.playlistService.findById(playlistId)
+  }
+
+  @Get()
+  async findAll(): Promise<Playlist[]> {
+    return this.playlistService.findAll()
   }
 }
