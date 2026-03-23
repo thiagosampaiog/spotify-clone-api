@@ -6,11 +6,14 @@ export type PlaylistDocument = mongoose.HydratedDocument<Playlist>
 
 @Schema({ timestamps: true })
 export class Playlist {
+
+  _id: mongoose.Types.ObjectId
+  
   @Prop({ required: true })
   name: string
 
-  @Prop({ default: null, type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }] })
-  tracks?: mongoose.Types.ObjectId[]
+  @Prop({ default: [], type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }] })
+  tracks: mongoose.Types.ObjectId[]
 
   @Prop({ default: 0 })
   totalTracks: number

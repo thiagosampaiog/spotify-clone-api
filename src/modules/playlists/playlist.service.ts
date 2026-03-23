@@ -1,11 +1,18 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Playlist } from './contract/playlist.schema'
-import { CreatePlaylistDto } from './contract/playlist.dto'
+import { AddPlaylistTrackDto, CreatePlaylistDto } from './contract/playlist.dto'
 import { MONGO_ERRORS } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 import { User } from '../users/contract/users.schema'
+import { Track } from '../tracks/contract/track.schema'
 
 @Injectable()
 export class PlaylistService {
@@ -13,23 +20,21 @@ export class PlaylistService {
     @InjectModel(Playlist.name)
     private playlistModel: Model<Playlist>,
     @InjectModel(User.name)
-    private userModel: Model<User>
+    private userModel: Model<User>,
+    @InjectModel(Track.name)
+    private trackModel: Model<Track>
   ) {}
 
   async create(input: CreatePlaylistDto): Promise<Playlist> {
     try {
       // TODO: Remove User from DTO, take from Token /me
-      // check if dto has tracks ids, if any doesn't exist throw error not found
-      // sum each track duration
-      // should I create an endpoint for add track to playlist? and remove tracks from here ?
-      const user = await this.userModel.findById(input.user)
-      if (!user) throw new NotFoundException(`User ${input.user} not found`)
+      const user = await this.userModel.findById(input.user).lean().exec()
+      if (!user) throw new NotFoundException(`User not found`)
       const entity = new this.playlistModel({
         ...input,
         status: Status.ACTIVE
       })
       await entity.save()
-      
       return entity.toObject()
     } catch (error) {
       if (error.code === MONGO_ERRORS.DUPLICATE_KEY) {
@@ -39,13 +44,52 @@ export class PlaylistService {
     }
   }
 
+  async addTrack(input: AddPlaylistTrackDto, userId: string): Promise<Playlist> {
+    const [playlist, track] = await Promise.all([
+      this.findById(input.playlist),
+      this.trackModel.findById(input.track, 'durationMs').lean().exec()
+    ])
+    if (!track) throw new NotFoundException('Track not found')
+
+    if (playlist.user._id.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to edit this playlist')
+    }
+
+    const updatedPlaylist = await this.playlistModel
+      .findByIdAndUpdate(
+        playlist._id,
+        {
+          $push: { tracks: track._id },
+          $inc: {
+            totalTracks: 1,
+            totalDurationMs: track.durationMs
+          }
+        },
+        { returnDocument: 'after' }
+      )
+      .exec()
+
+    if (!updatedPlaylist) {
+      throw new NotFoundException('Playlist was deleted before update')
+    }
+    console.log("Lean: ", await this.playlistModel.findById(playlist._id).lean())
+    console.log("\n\n\n\n")
+    console.log("Exec: ", await this.playlistModel.findById(playlist._id).exec())
+      console.log("\n\n\n\n")
+    console.log("Lean + Exec: ", await this.playlistModel.findById(playlist._id).lean().exec())
+    console.log("\n\n\n\n")
+    console.log('🚀 ~ PlaylistService ~ addTrack ~ updatedPlaylist.toObject():', updatedPlaylist.toObject())
+
+    return updatedPlaylist.toObject()
+  }
+
   async findById(playlistId: string): Promise<Playlist> {
-    const entity = await this.playlistModel.findById(playlistId)
-    if (!entity) throw new NotFoundException(`Playlist ${playlistId} not found`)
+    const entity = await this.playlistModel.findById(playlistId).lean().exec()
+    if (!entity) throw new NotFoundException(`Playlist not found`)
     return entity
   }
 
   async findAll() {
-    return this.playlistModel.find()
+    return this.playlistModel.find().lean().exec()
   }
 }

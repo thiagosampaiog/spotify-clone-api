@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/swagger'
-import { ArrayUnique, IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator'
+import { IsMongoId, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator'
 
 export class CreatePlaylistDto {
   @IsString()
@@ -9,15 +9,22 @@ export class CreatePlaylistDto {
   @IsMongoId()
   user: string
 
-  @IsArray()
-  @ArrayUnique()
-  @IsMongoId()
-  @IsOptional()
-  tracks?: string[]
-
   @IsString()
   @IsOptional()
   @IsUrl()
   imageUrl?: string
 }
+
 export class UpdatePlaylistDto extends PartialType(CreatePlaylistDto) {}
+
+export class AddPlaylistTrackDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  track: string
+
+  @IsMongoId()
+  @IsNotEmpty()
+  playlist: string
+}
+
+// AddMultipleTracksDto..

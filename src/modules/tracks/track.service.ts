@@ -69,13 +69,13 @@ export class TrackService {
   }
 
   async findById(trackId: string): Promise<Track> {
-    const entity = await this.findById(trackId)
-    if (!entity) throw new NotFoundException(`Track ${trackId} not found`)
+    const entity = await this.trackModel.findById(trackId).lean().exec()
+    if (!entity) throw new NotFoundException(`Track not found`)
     return entity
   }
 
   async findAll(): Promise<Track[]> {
-    return this.trackModel.find()
+    return this.trackModel.find().lean().exec()
   }
   
 }

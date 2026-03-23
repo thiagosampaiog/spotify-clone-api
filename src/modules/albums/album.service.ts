@@ -24,7 +24,7 @@ export class AlbumService {
       // I removed the findOne because exists is better
 
       const exists = await this.artistModel.exists({ _id: input.artist })
-      if (!exists) throw new NotFoundException(`Artist ${input.artist} not found`)
+      if (!exists) throw new NotFoundException(`Artist not found`)
 
       const entity = new this.albumModel({
         name: input.name,
@@ -47,7 +47,7 @@ export class AlbumService {
 
   async findById(albumId: string): Promise<Album> {
     const entity = await this.albumModel.findById(albumId).lean().exec()
-    if (!entity) throw new NotFoundException(`Album ${albumId} not found`)
+    if (!entity) throw new NotFoundException(`Album not found`)
     return entity
   }
 

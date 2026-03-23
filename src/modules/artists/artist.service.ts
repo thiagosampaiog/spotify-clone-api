@@ -41,14 +41,14 @@ export class ArtistsService {
       .findOneAndUpdate({ _id: artistId }, { $set: input }, { returnDocument: 'after' })
       .lean()
       .exec()
-    if (!updated) throw new NotFoundException(`Artist ${artistId} not found`)
+    if (!updated) throw new NotFoundException(`Artist not found`)
     return updated
   }
 
   async delete(artistId: string): Promise<void> {
     const deleted = await this.artistModel.findByIdAndDelete(artistId).exec()
     if (!deleted) {
-      throw new NotFoundException(`Artist ${artistId} not found`)
+      throw new NotFoundException(`Artist not found`)
     }
   }
 }
