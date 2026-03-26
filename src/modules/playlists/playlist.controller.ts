@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common'
 import { PlaylistService } from './playlist.service'
 import { Playlist } from './contract/playlist.schema'
-import { AddPlaylistTrackDto, CreatePlaylistDto } from './contract/playlist.dto'
+import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
 
 @Controller('playlists')
 export class PlaylistController {
@@ -18,10 +18,15 @@ export class PlaylistController {
     return this.playlistService.addTrack(input, userId)
   }
 
-  // find playlist Id
+  // Should be removed later? or just check userId
   @Get(':id')
   async findById(@Param('id') playlistId: string): Promise<Playlist> {
     return this.playlistService.findById(playlistId)
+  }
+
+  @Patch(':id')
+  async update(@Body() input: UpdatePlaylistDto, @Param('id') playlistId: string): Promise<Playlist>{
+    return this.playlistService.update(input, playlistId);
   }
 
   // find /me playlists 
@@ -29,5 +34,7 @@ export class PlaylistController {
   async findAll(): Promise<Playlist[]> {
     return this.playlistService.findAll()
   }
+
+
 
 }

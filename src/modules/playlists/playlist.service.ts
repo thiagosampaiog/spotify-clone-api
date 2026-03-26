@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Playlist } from './contract/playlist.schema'
-import { AddPlaylistTrackDto, CreatePlaylistDto } from './contract/playlist.dto'
+import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
 import { MONGO_ERRORS } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 import { User } from '../users/contract/users.schema'
@@ -44,6 +44,18 @@ export class PlaylistService {
     }
   }
 
+  async update(input: UpdatePlaylistDto, playlistId: string): Promise<Playlist> {
+    const user = await this.userModel.findById(input.user).lean().exec()
+    if (!user) throw new NotFoundException(`User not found`)
+    const entity = new this.playlistModel({
+      ...input,
+      status: Status.ACTIVE
+    })
+    const playlist = await this.findById(playlistId)
+    await this.playlistModel.updateOne({ _id: playlist._id }, { ...input, status: Status.ACTIVE })
+    return entity.toObject()
+  }
+
   async addTrack(input: AddPlaylistTrackDto, userId: string): Promise<Playlist> {
     const [playlist, track] = await Promise.all([
       this.findById(input.playlist),
@@ -72,13 +84,6 @@ export class PlaylistService {
     if (!updatedPlaylist) {
       throw new NotFoundException('Playlist was deleted before update')
     }
-    console.log("Lean: ", await this.playlistModel.findById(playlist._id).lean())
-    console.log("\n\n\n\n")
-    console.log("Exec: ", await this.playlistModel.findById(playlist._id).exec())
-      console.log("\n\n\n\n")
-    console.log("Lean + Exec: ", await this.playlistModel.findById(playlist._id).lean().exec())
-    console.log("\n\n\n\n")
-    console.log('🚀 ~ PlaylistService ~ addTrack ~ updatedPlaylist.toObject():', updatedPlaylist.toObject())
 
     return updatedPlaylist.toObject()
   }
