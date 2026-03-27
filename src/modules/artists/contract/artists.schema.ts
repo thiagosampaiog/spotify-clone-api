@@ -17,6 +17,9 @@ export class Artist {
 
   @Prop({ default: Status.ACTIVE, enum: Status })
   status: Status
+
+  @Prop({ default: null, required: false })
+  deletedAt: Date
 }
 
 export const ArtistSchema = SchemaFactory.createForClass(Artist)

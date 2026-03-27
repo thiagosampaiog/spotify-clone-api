@@ -6,9 +6,8 @@ export type PlaylistDocument = mongoose.HydratedDocument<Playlist>
 
 @Schema({ timestamps: true })
 export class Playlist {
-
   _id: mongoose.Types.ObjectId
-  
+
   @Prop({ required: true })
   name: string
 
@@ -29,6 +28,9 @@ export class Playlist {
 
   @Prop({ default: Status.ACTIVE, enum: Status })
   status: Status
+
+  @Prop({ default: null, required: false })
+  deletedAt: Date
 }
 
 export const PlaylistSchema = SchemaFactory.createForClass(Playlist)

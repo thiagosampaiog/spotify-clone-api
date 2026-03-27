@@ -14,6 +14,9 @@ export class User {
 
   @Prop({ default: Status.ACTIVE, enum: Status })
   status: Status
+
+  @Prop({ default: null, required: false })
+  deletedAt: Date
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

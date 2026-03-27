@@ -31,6 +31,9 @@ export class Track {
   })
   artists: mongoose.Types.ObjectId[]
 
+  @Prop({ default: null, required: false })
+  deletedAt: Date
+
   @Prop({ default: Status.ACTIVE, enum: Status })
   status: Status
 }

@@ -97,4 +97,20 @@ export class PlaylistService {
   async findAll() {
     return this.playlistModel.find().lean().exec()
   }
+
+  async delete(playlistId: string, userId: string) {
+    const deleted = await this.playlistModel
+      .findOneAndUpdate(
+        { _id: playlistId, user: userId, status: { $ne: Status.DELETED } },
+        { status: Status.DELETED, deletedAt: new Date() },
+        { returnDocument: 'after' }
+      )
+      .exec()
+
+    if (!deleted) {
+      throw new NotFoundException('Playlist not found, already deleted, or you do not own it')
+    }
+
+    return deleted
+  }
 }

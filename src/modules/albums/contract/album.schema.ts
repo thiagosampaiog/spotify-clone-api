@@ -27,6 +27,9 @@ export class Album {
   @Prop({ required: true })
   releasedAt: Date
 
+  @Prop({ default: null, required: false })
+  deletedAt: Date
+
   @Prop({ default: Status.ACTIVE, enum: Status })
   status: Status
 }
@@ -40,7 +43,4 @@ AlbumSchema.index({ genres: 1 })
 // find most recent album by artist
 AlbumSchema.index({ artist: 1, releasedAt: -1 })
 // find album by artist name, must be unique
-AlbumSchema.index(
-  { artist: 1, name: 1 },
-  { unique: true }
-)
+AlbumSchema.index({ artist: 1, name: 1 }, { unique: true })
