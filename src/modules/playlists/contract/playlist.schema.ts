@@ -29,6 +29,9 @@ export class Playlist {
   @Prop({ default: Status.ACTIVE, enum: Status })
   status: Status
 
+  @Prop({ default: true })
+  isPublic: boolean
+
   @Prop({ default: null, required: false })
   deletedAt: Date
 }

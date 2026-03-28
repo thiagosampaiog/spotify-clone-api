@@ -22,21 +22,33 @@ export class PlaylistController {
     return this.playlistService.addTrack(input, playlistId, userId)
   }
 
-  // Should be removed later? or just check userId
-  @Get(':id')
-  async findById(@Param('id') playlistId: string): Promise<Playlist> {
-    return this.playlistService.findById(playlistId)
+  @Get(':id/users/:userId')
+  async findOneMyPlaylist(@Param('id') playlistId: string, @Param('userId') userId: string): Promise<Playlist> {
+    return this.playlistService.findOneMyPlaylist(playlistId, userId)
   }
 
   @Patch(':playlistId/users/:userId')
-  async update(@Body() input: UpdatePlaylistDto, @Param('playlistId') playlistId: string, @Param('userId') userId: string): Promise<Playlist> {
+  async update(
+    @Body() input: UpdatePlaylistDto,
+    @Param('playlistId') playlistId: string,
+    @Param('userId') userId: string
+  ): Promise<Playlist> {
     return this.playlistService.update(input, playlistId, userId)
   }
 
-  // find /me playlists
   @Get('users/:userId')
-  async findAll(@Param('userId') userId: string): Promise<Playlist[]> {
-    return this.playlistService.findAll(userId)
+  async findAllMyPlaylists(@Param('userId') userId: string): Promise<Playlist[]> {
+    return this.playlistService.findAllMyPlaylists(userId)
+  }
+
+  @Get()
+  async findAllPublic() {
+    return this.playlistService.findAllPublic()
+  }
+
+  @Get(':playlistId')
+  async findOnePublic(@Param('playlistId') playlistId: string) {
+    return this.playlistService.findOnePublic(playlistId)
   }
 
   @Delete(':playlistId/users/:userId')

@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Playlist } from './contract/playlist.schema'
 import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
-import { MONGO_ERRORS } from '@app/common/constants'
+import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 import { User } from '../users/contract/users.schema'
 import { Track } from '../tracks/contract/track.schema'
@@ -32,6 +32,7 @@ export class PlaylistService {
       if (!user) throw new NotFoundException(`User not found`)
       const entity = new this.playlistModel({
         ...input,
+        isPublic: true,
         status: Status.ACTIVE
       })
       await entity.save()
@@ -49,7 +50,7 @@ export class PlaylistService {
       .findOneAndUpdate(
         { _id: playlistId, user: userId, status: { $nin: [Status.BANNED, Status.DELETED] } },
         {
-          $set: { name: input.name, imageUrl: input.imageUrl }
+          $set: { name: input.name, imageUrl: input.imageUrl, isPublic: input.isPublic }
         },
         { returnDocument: 'after' }
       )
@@ -60,7 +61,7 @@ export class PlaylistService {
 
   async addTrack(input: AddPlaylistTrackDto, playlistId: string, userId: string): Promise<Playlist> {
     const [playlist, track] = await Promise.all([
-      this.findById(playlistId),
+      this.findOneMyPlaylist(playlistId, userId),
       this.trackModel
         .findOne({ _id: input.track, status: { $nin: [Status.BANNED, Status.DELETED] } }, 'durationMs')
         .lean()
@@ -93,21 +94,43 @@ export class PlaylistService {
     return updatedPlaylist.toObject()
   }
 
-  async findById(playlistId: string): Promise<Playlist> {
+  async findOneMyPlaylist(playlistId: string, userId: string): Promise<Playlist> {
     const entity = await this.playlistModel
-      .findOne({ _id: playlistId, status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .findOne({ _id: playlistId, user: userId, status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .select(POPULATE_SELECT)
+      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
       .lean()
       .exec()
     if (!entity) throw new NotFoundException(`Playlist not found`)
     return entity
   }
 
-  async findAll(userId: string) {
+  async findAllMyPlaylists(userId: string) {
     return this.playlistModel
       .find({
         user: userId,
         status: { $nin: [Status.BANNED, Status.DELETED] }
       })
+      .select(POPULATE_SELECT)
+      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
+      .lean()
+      .exec()
+  }
+
+  async findAllPublic() {
+    return this.playlistModel
+      .find({ status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .select(POPULATE_SELECT)
+      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
+      .lean()
+      .exec()
+  }
+
+  async findOnePublic(playlistId: string) {
+    return this.playlistModel
+      .findOne({ _id: playlistId, status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .select(POPULATE_SELECT)
+      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
       .lean()
       .exec()
   }

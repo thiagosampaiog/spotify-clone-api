@@ -1,4 +1,4 @@
-import { IsMongoId, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator'
+import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator'
 
 export class CreatePlaylistDto {
   @IsString()
@@ -13,6 +13,7 @@ export class CreatePlaylistDto {
 
 export class UpdatePlaylistDto {
   @IsString()
+  @IsOptional()
   @IsNotEmpty()
   name?: string
 
@@ -20,6 +21,10 @@ export class UpdatePlaylistDto {
   @IsOptional()
   @IsUrl()
   imageUrl?: string
+
+  @IsBoolean()
+  @IsOptional()
+  isPublic?: boolean
 }
 
 export class AddPlaylistTrackDto {

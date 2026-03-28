@@ -6,6 +6,7 @@ import { UserModule } from './modules/users/user.module'
 import { AlbumModule } from './modules/albums/album.module'
 import { TrackModule } from './modules/tracks/track.module'
 import { PlaylistModule } from './modules/playlists/playlist.module'
+import { LikeModule } from './modules/likes/like.module'
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { PlaylistModule } from './modules/playlists/playlist.module'
     UserModule,
     AlbumModule,
     TrackModule,
-    PlaylistModule
+    PlaylistModule,
+    LikeModule
   ]
 })
 export class AppModule {}

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Track } from './contract/track.schema'
 import { Model } from 'mongoose'
 import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
-import { MONGO_ERRORS } from '@app/common/constants'
+import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 import { Album } from '../albums/contract/album.schema'
 import { Artist } from '../artists/contract/artists.schema'
@@ -81,6 +81,11 @@ export class TrackService {
         _id: trackId,
         status: { $nin: [Status.DELETED, Status.BANNED] }
       })
+      .select(POPULATE_SELECT)
+      .populate([
+        { path: 'artists', select: POPULATE_SELECT },
+        { path: 'album', select: POPULATE_SELECT }
+      ])
       .lean()
       .exec()
     if (!entity) throw new NotFoundException(`Track not found`)
@@ -90,6 +95,11 @@ export class TrackService {
   async findAll(): Promise<Track[]> {
     return this.trackModel
       .find({ status: { $nin: [Status.DELETED, Status.BANNED] } })
+      .select(POPULATE_SELECT)
+      .populate([
+        { path: 'album', select: POPULATE_SELECT },
+        { path: 'artists', select: POPULATE_SELECT }
+      ])
       .lean()
       .exec()
   }
