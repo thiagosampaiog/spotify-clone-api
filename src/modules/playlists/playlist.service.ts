@@ -44,26 +44,31 @@ export class PlaylistService {
     }
   }
 
-  async update(input: UpdatePlaylistDto, playlistId: string): Promise<Playlist> {
-    const user = await this.userModel.findById(input.user).lean().exec()
-    if (!user) throw new NotFoundException(`User not found`)
-    const entity = new this.playlistModel({
-      ...input,
-      status: Status.ACTIVE
-    })
-    const playlist = await this.findById(playlistId)
-    await this.playlistModel.updateOne({ _id: playlist._id }, { ...input, status: Status.ACTIVE })
-    return entity.toObject()
+  async update(input: UpdatePlaylistDto, playlistId: string, userId: string): Promise<Playlist> {
+    const updated = await this.playlistModel
+      .findOneAndUpdate(
+        { _id: playlistId, user: userId, status: { $nin: [Status.BANNED, Status.DELETED] } },
+        {
+          $set: { name: input.name, imageUrl: input.imageUrl }
+        },
+        { returnDocument: 'after' }
+      )
+      .exec()
+    if (!updated) throw new NotFoundException('Playlist not found')
+    return updated
   }
 
-  async addTrack(input: AddPlaylistTrackDto, userId: string): Promise<Playlist> {
+  async addTrack(input: AddPlaylistTrackDto, playlistId: string, userId: string): Promise<Playlist> {
     const [playlist, track] = await Promise.all([
-      this.findById(input.playlist),
-      this.trackModel.findById(input.track, 'durationMs').lean().exec()
+      this.findById(playlistId),
+      this.trackModel
+        .findOne({ _id: input.track, status: { $nin: [Status.BANNED, Status.DELETED] } }, 'durationMs')
+        .lean()
+        .exec()
     ])
     if (!track) throw new NotFoundException('Track not found')
 
-    if (playlist.user._id.toString() !== userId) {
+    if (playlist.user.toString() !== userId) {
       throw new ForbiddenException('You do not have permission to edit this playlist')
     }
 
@@ -89,13 +94,22 @@ export class PlaylistService {
   }
 
   async findById(playlistId: string): Promise<Playlist> {
-    const entity = await this.playlistModel.findById(playlistId).lean().exec()
+    const entity = await this.playlistModel
+      .findOne({ _id: playlistId, status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .lean()
+      .exec()
     if (!entity) throw new NotFoundException(`Playlist not found`)
     return entity
   }
 
-  async findAll() {
-    return this.playlistModel.find().lean().exec()
+  async findAll(userId: string) {
+    return this.playlistModel
+      .find({
+        user: userId,
+        status: { $nin: [Status.BANNED, Status.DELETED] }
+      })
+      .lean()
+      .exec()
   }
 
   async delete(playlistId: string, userId: string) {

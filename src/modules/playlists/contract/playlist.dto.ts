@@ -15,16 +15,21 @@ export class CreatePlaylistDto {
   imageUrl?: string
 }
 
-export class UpdatePlaylistDto extends PartialType(CreatePlaylistDto) {}
+export class UpdatePlaylistDto {
+  @IsString()
+  @IsNotEmpty()
+  name?: string
+
+  @IsString()
+  @IsOptional()
+  @IsUrl()
+  imageUrl?: string
+}
 
 export class AddPlaylistTrackDto {
   @IsMongoId()
   @IsNotEmpty()
   track: string
-
-  @IsMongoId()
-  @IsNotEmpty()
-  playlist: string
 }
 
 // AddMultipleTracksDto..

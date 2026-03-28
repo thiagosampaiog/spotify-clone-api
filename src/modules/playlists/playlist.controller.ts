@@ -13,9 +13,13 @@ export class PlaylistController {
   }
 
   // I Added the id here just while I don't have jwt auth users/me
-  @Post('users/:id')
-  async addTrack(@Body() input: AddPlaylistTrackDto, @Param('id') userId: string): Promise<Playlist> {
-    return this.playlistService.addTrack(input, userId)
+  @Post(':playlistId/users/:userId/tracks')
+  async addTrack(
+    @Body() input: AddPlaylistTrackDto,
+    @Param('playlistId') playlistId: string,
+    @Param('userId') userId: string
+  ): Promise<Playlist> {
+    return this.playlistService.addTrack(input, playlistId, userId)
   }
 
   // Should be removed later? or just check userId
@@ -24,19 +28,19 @@ export class PlaylistController {
     return this.playlistService.findById(playlistId)
   }
 
-  @Patch(':id')
-  async update(@Body() input: UpdatePlaylistDto, @Param('id') playlistId: string): Promise<Playlist> {
-    return this.playlistService.update(input, playlistId)
+  @Patch(':playlistId/users/:userId')
+  async update(@Body() input: UpdatePlaylistDto, @Param('playlistId') playlistId: string, @Param('userId') userId: string): Promise<Playlist> {
+    return this.playlistService.update(input, playlistId, userId)
   }
 
   // find /me playlists
-  @Get()
-  async findAll(): Promise<Playlist[]> {
-    return this.playlistService.findAll()
+  @Get('users/:userId')
+  async findAll(@Param('userId') userId: string): Promise<Playlist[]> {
+    return this.playlistService.findAll(userId)
   }
 
-  @Delete(':id/users/:userId')
-  async delete(@Param('id') playlistId: string, @Param('userId') userId: string) {
+  @Delete(':playlistId/users/:userId')
+  async delete(@Param('playlistId') playlistId: string, @Param('userId') userId: string) {
     return this.playlistService.delete(playlistId, userId)
   }
 }
