@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post } from '@nestjs/common'
 import { AlbumService } from './album.service'
-import { CreateAlbumDto } from './contract/album.dto'
+import { CreateAlbumDto, UpdateAlbumDto } from './contract/album.dto'
 import { Album } from './contract/album.schema'
 
 @Controller('albums')
@@ -23,5 +23,15 @@ export class AlbumController {
   @Get(':id')
   async findById(@Param('id') albumId: string): Promise<Album> {
     return this.albumService.findById(albumId)
+  }
+
+  @Patch(':albumId')
+  async update(@Body() input: UpdateAlbumDto, @Param('albumId') albumId: string): Promise<Album> {
+    return this.albumService.update(input, albumId)
+  }
+
+  @Delete(':albumId')
+  async delete(@Param('albumId') albumId: string): Promise<Album> {
+    return this.albumService.delete(albumId)
   }
 }
