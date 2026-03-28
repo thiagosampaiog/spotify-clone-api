@@ -45,3 +45,9 @@ export enum Status {
   DELETED = 'DELETED',
   BANNED = 'BANNED'
 }
+
+export enum LikesTargets {
+  ALBUM = 'Album',
+  TRACK = 'Track',
+  PLAYLIST = 'Playlist'
+}

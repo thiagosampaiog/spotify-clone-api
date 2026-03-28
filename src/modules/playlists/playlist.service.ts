@@ -25,10 +25,10 @@ export class PlaylistService {
     private trackModel: Model<Track>
   ) {}
 
-  async create(input: CreatePlaylistDto): Promise<Playlist> {
+  async create(input: CreatePlaylistDto, userId: string): Promise<Playlist> {
     try {
       // TODO: Remove User from DTO, take from Token /me
-      const user = await this.userModel.findById(input.user).lean().exec()
+      const user = await this.userModel.findById(userId).lean().exec()
       if (!user) throw new NotFoundException(`User not found`)
       const entity = new this.playlistModel({
         ...input,

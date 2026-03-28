@@ -7,9 +7,9 @@ import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './con
 export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
-  @Post()
-  async create(@Body() input: CreatePlaylistDto): Promise<Playlist> {
-    return this.playlistService.create(input)
+  @Post('users/:userId')
+  async create(@Body() input: CreatePlaylistDto, @Param('userId') userId: string): Promise<Playlist> {
+    return this.playlistService.create(input, userId)
   }
 
   // I Added the id here just while I don't have jwt auth users/me
