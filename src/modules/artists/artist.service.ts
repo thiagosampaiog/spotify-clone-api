@@ -2,7 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Model } from 'mongoose'
 import { Artist } from './contract/artists.schema'
 import { CreateArtistDto, type UpdateArtistDto } from './contract/artist.dto'
-import { MONGO_ERRORS } from '@app/common/constants'
+import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
 import { InjectModel } from '@nestjs/mongoose'
 import { Status } from '@app/common/enums'
 
@@ -18,6 +18,7 @@ export class ArtistsService {
       .find({
         status: { $nin: [Status.DELETED, Status.BANNED] }
       })
+      .select(POPULATE_SELECT)
       .lean()
       .exec()
   }
@@ -28,6 +29,7 @@ export class ArtistsService {
         _id: artistId,
         status: { $nin: [Status.DELETED, Status.BANNED] }
       })
+      .select(POPULATE_SELECT)
       .lean()
       .exec()
     if (!found) throw new NotFoundException('Artist not found')

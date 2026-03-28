@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Album } from './contract/album.schema'
 import { Model } from 'mongoose'
 import { CreateAlbumDto, UpdateAlbumDto } from './contract/album.dto'
-import { MONGO_ERRORS } from '@app/common/constants'
+import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
 import { Artist } from '../artists/contract/artists.schema'
 import { Status } from '@app/common/enums'
 
@@ -51,6 +51,8 @@ export class AlbumService {
   async findById(albumId: string): Promise<Album> {
     const entity = await this.albumModel
       .findOne({ _id: albumId, status: { $nin: [Status.DELETED, Status.BANNED] } })
+      .select(POPULATE_SELECT)
+      .populate({ path: 'artist', select: POPULATE_SELECT })
       .lean()
       .exec()
     if (!entity) throw new NotFoundException(`Album not found`)
@@ -58,7 +60,12 @@ export class AlbumService {
   }
 
   async findAll(): Promise<Album[]> {
-    return this.albumModel.find({ status: { $nin: [Status.DELETED, Status.BANNED] } })
+    return this.albumModel
+      .find({ status: { $nin: [Status.DELETED, Status.BANNED] } })
+      .select(POPULATE_SELECT)
+      .populate({ path: 'artist', select: POPULATE_SELECT })
+      .lean()
+      .exec()
   }
 
   async update(input: UpdateAlbumDto, albumId: string): Promise<Album> {
