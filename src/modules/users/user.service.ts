@@ -13,13 +13,19 @@ export class UserService {
     private userModel: Model<User>
   ) {}
   async findById(userId: string): Promise<User> {
-    const found = await this.userModel.findById(userId).lean().exec()
+    const found = await this.userModel
+      .findOne({ _id: userId, status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .lean()
+      .exec()
     if (!found) throw new NotFoundException(`User not found`)
     return found
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().lean().exec()
+    return this.userModel
+      .find({ status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .lean()
+      .exec()
   }
 
   async create(input: CreateUserDto): Promise<User> {
@@ -37,7 +43,11 @@ export class UserService {
 
   async update(input: UpdateUserDto, userId: string): Promise<User> {
     const updated = await this.userModel
-      .findOneAndUpdate({ _id: userId }, { $set: input }, { returnDocument: 'after' })
+      .findOneAndUpdate(
+        { _id: userId, status: { $nin: [Status.BANNED, Status.DELETED] } },
+        { $set: input },
+        { returnDocument: 'after' }
+      )
       .lean()
       .exec()
 
@@ -46,8 +56,22 @@ export class UserService {
     return updated
   }
 
-  async delete(userId: string): Promise<void> {
-    const deleted = await this.userModel.findByIdAndDelete(userId).exec()
+  async delete(userId: string): Promise<User> {
+    const deleted = await this.userModel
+      .findOneAndUpdate(
+        {
+          _id: userId,
+          status: { $ne: Status.DELETED }
+        },
+        {
+          $set: { status: Status.DELETED, deletedAt: new Date() }
+        },
+        {
+          returnDocument: 'after'
+        }
+      )
+      .exec()
     if (!deleted) throw new NotFoundException(`User not found`)
+    return deleted
   }
 }
