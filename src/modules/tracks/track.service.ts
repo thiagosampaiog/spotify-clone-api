@@ -23,18 +23,22 @@ export class TrackService {
     try {
       // TODO: transaction, mongo session
 
-      const [album, artists] = await Promise.all([
-        this.albumModel.findById(input.album).lean().exec(),
+      const [album, artistsCount] = await Promise.all([
+        this.albumModel
+          .findOne({ _id: input.album, status: { $nin: [Status.DELETED, Status.BANNED] } })
+          .lean()
+          .exec(),
         this.artistModel
-          .find({
-            _id: { $in: input.artists }
+          .countDocuments({
+            _id: { $in: input.artists },
+            status: { $nin: [Status.DELETED, Status.BANNED] }
           })
           .lean()
           .exec()
       ])
 
       if (!album) throw new NotFoundException(`Album not found`)
-      if (artists.length !== input.artists.length) throw new NotFoundException('One or more artists not found')
+      if (artistsCount !== input.artists.length) throw new NotFoundException('One or more artists not found')
 
       // TODO: extract real duration from audio file
 
@@ -50,13 +54,16 @@ export class TrackService {
 
       await entity.save()
 
-      this.albumModel
-        .findByIdAndUpdate(album._id, {
-          $inc: {
-            totalTracks: 1,
-            totalDurationMs: entity.durationMs
+      await this.albumModel
+        .updateOne(
+          { _id: album._id },
+          {
+            $inc: {
+              totalTracks: 1,
+              totalDurationMs: entity.durationMs
+            }
           }
-        })
+        )
         .exec()
 
       return entity.toObject()
@@ -69,21 +76,29 @@ export class TrackService {
   }
 
   async findById(trackId: string): Promise<Track> {
-    const entity = await this.trackModel.findById(trackId).lean().exec()
+    const entity = await this.trackModel
+      .findOne({
+        _id: trackId,
+        status: { $nin: [Status.DELETED, Status.BANNED] }
+      })
+      .lean()
+      .exec()
     if (!entity) throw new NotFoundException(`Track not found`)
     return entity
   }
 
   async findAll(): Promise<Track[]> {
     return this.trackModel
-      .find({ status: { $ne: Status.DELETED } })
+      .find({ status: { $nin: [Status.DELETED, Status.BANNED] } })
       .lean()
       .exec()
   }
 
   async update(input: UpdateTrackDto, trackId: string): Promise<Track> {
     if (input.album) {
-      const albumExists = await this.albumModel.exists({ _id: input.album }).exec()
+      const albumExists = await this.albumModel
+        .exists({ _id: input.album, status: { $nin: [Status.DELETED, Status.BANNED] } })
+        .exec()
       if (!albumExists) throw new NotFoundException('Album not found')
     }
 
@@ -91,7 +106,7 @@ export class TrackService {
       const artistsCount = await this.artistModel
         .countDocuments({
           _id: { $in: input.artists },
-          status: { $ne: Status.DELETED }
+          status: { $nin: [Status.DELETED, Status.BANNED] }
         })
         .exec()
 
@@ -101,8 +116,11 @@ export class TrackService {
     }
 
     const updated = await this.trackModel
-      .findByIdAndUpdate(
-        trackId,
+      .findOneAndUpdate(
+        {
+          _id: trackId,
+          status: { $nin: [Status.DELETED, Status.BANNED] }
+        },
         {
           $set: input
         },
