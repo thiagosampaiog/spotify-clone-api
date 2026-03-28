@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { TrackService } from './track.service'
-import { CreateTrackDto } from './contract/track.dto'
+import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
 import { Track } from './contract/track.schema'
 
 @Controller('tracks')
@@ -20,5 +20,15 @@ export class TrackController {
   @Get(':id')
   async findById(@Param('id') trackId: string): Promise<Track> {
     return this.trackService.findById(trackId)
+  }
+
+  @Patch(':id')
+  async update(@Body() input: UpdateTrackDto, @Param('id') trackId: string): Promise<Track> {
+    return this.trackService.update(input, trackId)
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') trackId: string): Promise<Track> {
+    return this.trackService.delete(trackId)
   }
 }

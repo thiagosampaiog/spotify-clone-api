@@ -1,8 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Track } from './contract/track.schema'
 import { Model } from 'mongoose'
-import { CreateTrackDto } from './contract/track.dto'
+import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
 import { MONGO_ERRORS } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 import { Album } from '../albums/contract/album.schema'
@@ -75,7 +75,56 @@ export class TrackService {
   }
 
   async findAll(): Promise<Track[]> {
-    return this.trackModel.find().lean().exec()
+    return this.trackModel
+      .find({ status: { $ne: Status.DELETED } })
+      .lean()
+      .exec()
   }
-  
+
+  async update(input: UpdateTrackDto, trackId: string): Promise<Track> {
+    if (input.album) {
+      const albumExists = await this.albumModel.exists({ _id: input.album }).exec()
+      if (!albumExists) throw new NotFoundException('Album not found')
+    }
+
+    if (input.artists && input.artists.length > 0) {
+      const artistsCount = await this.artistModel
+        .countDocuments({
+          _id: { $in: input.artists },
+          status: { $ne: Status.DELETED }
+        })
+        .exec()
+
+      if (artistsCount !== input.artists.length) {
+        throw new BadRequestException('One or more invalid artists are invalid')
+      }
+    }
+
+    const updated = await this.trackModel
+      .findByIdAndUpdate(
+        trackId,
+        {
+          $set: input
+        },
+        { returnDocument: 'after' }
+      )
+      .exec()
+    if (!updated) throw new NotFoundException('Track not found')
+    return updated
+  }
+
+  async delete(trackId: string): Promise<Track> {
+    const deleted = await this.trackModel
+      .findOneAndUpdate(
+        { _id: trackId, status: { $ne: Status.DELETED } },
+        {
+          status: Status.DELETED,
+          deletedAt: new Date()
+        },
+        { returnDocument: 'after' }
+      )
+      .exec()
+    if (!deleted) throw new NotFoundException('Track not found')
+    return deleted
+  }
 }
