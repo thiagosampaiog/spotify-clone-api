@@ -13,8 +13,8 @@ export class ArtistsController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<Artist> {
-    return this.artistsService.findById(id)
+  async findById(@Param('id') artistId: string): Promise<Artist> {
+    return this.artistsService.findById(artistId)
   }
 
   @Post()
@@ -28,7 +28,7 @@ export class ArtistsController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') artistId: string): Promise<void> {
+  async delete(@Param('id') artistId: string): Promise<Artist> {
     return this.artistsService.delete(artistId)
   }
 }

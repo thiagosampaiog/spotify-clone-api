@@ -14,11 +14,22 @@ export class ArtistsService {
   ) {}
 
   async findAll(): Promise<Artist[]> {
-    return this.artistModel.find().lean().exec()
+    return this.artistModel
+      .find({
+        status: { $nin: [Status.DELETED, Status.BANNED] }
+      })
+      .lean()
+      .exec()
   }
 
-  async findById(id: string): Promise<Artist> {
-    const found = await this.artistModel.findById(id).lean().exec()
+  async findById(artistId: string): Promise<Artist> {
+    const found = await this.artistModel
+      .findOne({
+        _id: artistId,
+        status: { $nin: [Status.DELETED, Status.BANNED] }
+      })
+      .lean()
+      .exec()
     if (!found) throw new NotFoundException('Artist not found')
     return found
   }
@@ -38,17 +49,35 @@ export class ArtistsService {
 
   async update(input: UpdateArtistDto, artistId: string): Promise<Artist> {
     const updated = await this.artistModel
-      .findOneAndUpdate({ _id: artistId }, { $set: input }, { returnDocument: 'after' })
+      .findOneAndUpdate(
+        { _id: artistId, status: { $nin: [Status.DELETED, Status.BANNED] } },
+        { $set: input },
+        { returnDocument: 'after' }
+      )
       .lean()
       .exec()
     if (!updated) throw new NotFoundException(`Artist not found`)
     return updated
   }
 
-  async delete(artistId: string): Promise<void> {
-    const deleted = await this.artistModel.findByIdAndDelete(artistId).exec()
+  async delete(artistId: string): Promise<Artist> {
+    const deleted = await this.artistModel
+      .findOneAndUpdate(
+        {
+          _id: artistId,
+          status: { $nin: [Status.DELETED, Status.BANNED] }
+        },
+        {
+          $set: { status: Status.DELETED, deletedAt: new Date() }
+        },
+        {
+          returnDocument: 'after'
+        }
+      )
+      .exec()
     if (!deleted) {
       throw new NotFoundException(`Artist not found`)
     }
+    return deleted
   }
 }
