@@ -6,6 +6,8 @@ export type PlaylistDocument = mongoose.HydratedDocument<Playlist>
 
 @Schema()
 export class TracksNested {
+  _id: mongoose.Types.ObjectId
+
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Track' })
   track: mongoose.Types.ObjectId
 

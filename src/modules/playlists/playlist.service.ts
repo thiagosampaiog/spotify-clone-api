@@ -56,7 +56,7 @@ export class PlaylistService {
       )
       .exec()
     if (!updated) throw new NotFoundException('Playlist not found')
-    return updated
+    return updated.toObject()
   }
 
   async addTrack(input: AddPlaylistTrackDto, playlistId: string, userId: string): Promise<Playlist> {
@@ -68,10 +68,6 @@ export class PlaylistService {
         .exec()
     ])
     if (!track) throw new NotFoundException('Track not found')
-
-    if (playlist.user._id.toString() !== userId) {
-      throw new ForbiddenException('You do not have permission to edit this playlist')
-    }
 
     const updatedPlaylist = await this.playlistModel
       .findByIdAndUpdate(
@@ -94,24 +90,28 @@ export class PlaylistService {
     return updatedPlaylist.toObject()
   }
 
-  async removeTrack(playlistId: string, userId: string, trackId: string): Promise<Playlist> {
-    const playlist = await this.playlistModel.findOne({
-      _id: playlistId,
-      user: userId,
-      status: { $nin: [Status.BANNED, Status.DELETED] }
-    })
+  async removeTrack(playlistId: string, userId: string, entryId: string) {
+    const playlist = await this.playlistModel
+      .findOne({
+        _id: playlistId,
+        user: userId,
+        status: { $nin: [Status.BANNED, Status.DELETED] }
+      })
+      .lean()
+      .exec()
 
     if (!playlist) throw new NotFoundException('Playlist not found')
 
-    if (playlist.tracks === null) {
-      throw new NotFoundException('Playlist is empty')
-    }
+    const entry = playlist.tracks.find((t) => t._id.toString() === entryId)
+
+    if (!entry) throw new NotFoundException('Track not found')
 
     const track = await this.trackModel
       .findOne({
-        _id: trackId,
+        _id: entry.track,
         status: { $nin: [Status.BANNED, Status.DELETED] }
       })
+      .select('durationMs')
       .lean()
       .exec()
 
@@ -119,18 +119,24 @@ export class PlaylistService {
 
     const updated = await this.playlistModel
       .findOneAndUpdate(
-        { _id: playlist._id, user: userId, status: { $nin: [Status.BANNED, Status.DELETED] } },
         {
-          $pull: { tracks: { track: track._id, addedAt: new Date() } },
-          $inc: { totalTracks: -1, totalDurationMs: -track.durationMs }
+          _id: playlistId,
+          user: userId,
+          status: { $nin: [Status.BANNED, Status.DELETED] }
         },
-        { returnDocument: 'after' }
+        {
+          $inc: { totalDurationMs: -track.durationMs, totalTracks: -1 },
+          $pull: { tracks: { _id: entryId } }
+        },
+        {
+          returnDocument: 'after'
+        }
       )
       .exec()
 
     if (!updated) throw new NotFoundException('Playlist not found')
 
-    return updated
+    return updated.toObject()
   }
 
   async findOneMyPlaylist(playlistId: string, userId: string): Promise<Playlist> {
@@ -164,7 +170,7 @@ export class PlaylistService {
 
   async findAllPublic() {
     return this.playlistModel
-      .find({ status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .find({ status: { $nin: [Status.BANNED, Status.DELETED] }, isPublic: true })
       .select(POPULATE_SELECT)
       .populate([
         { path: 'tracks', select: POPULATE_SELECT },
@@ -175,7 +181,7 @@ export class PlaylistService {
   }
 
   async findOnePublic(playlistId: string) {
-    return this.playlistModel
+    const entity = await this.playlistModel
       .findOne({ _id: playlistId, status: { $nin: [Status.BANNED, Status.DELETED] } })
       .select(POPULATE_SELECT)
       .populate([
@@ -184,6 +190,9 @@ export class PlaylistService {
       ])
       .lean()
       .exec()
+
+    if (!entity) throw new NotFoundException('Playlist not found')
+    return entity
   }
 
   async delete(playlistId: string, userId: string) {
@@ -199,6 +208,6 @@ export class PlaylistService {
       throw new NotFoundException('Playlist not found, already deleted, or you do not own it')
     }
 
-    return deleted
+    return deleted.toObject()
   }
 }
