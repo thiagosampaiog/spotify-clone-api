@@ -3,7 +3,15 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Track } from './contract/track.schema'
 import { Model } from 'mongoose'
 import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
-import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
+import {
+  ACTIVE_FILTER,
+  ALBUM_LITE_SELECT,
+  ARTIST_LITE_SELECT,
+  MONGO_ERRORS,
+  POPULATE_SELECT,
+  TRACK_DETAIL_SELECT,
+  TRACK_LITE_SELECT
+} from '@app/common/constants'
 import { Status } from '@app/common/enums'
 import { Album } from '../albums/contract/album.schema'
 import { Artist } from '../artists/contract/artists.schema'
@@ -31,7 +39,7 @@ export class TrackService {
         this.artistModel
           .countDocuments({
             _id: { $in: input.artists },
-            status: { $nin: [Status.DELETED, Status.BANNED] }
+            ...ACTIVE_FILTER
           })
           .lean()
           .exec()
@@ -81,10 +89,10 @@ export class TrackService {
         _id: trackId,
         status: { $nin: [Status.DELETED, Status.BANNED] }
       })
-      .select(POPULATE_SELECT)
+      .select(TRACK_DETAIL_SELECT)
       .populate([
-        { path: 'artists', select: POPULATE_SELECT },
-        { path: 'album', select: POPULATE_SELECT }
+        { path: 'artists', select: ARTIST_LITE_SELECT  },
+        { path: 'album', select: ALBUM_LITE_SELECT }
       ])
       .lean()
       .exec()
@@ -94,11 +102,11 @@ export class TrackService {
 
   async findAll(): Promise<Track[]> {
     return this.trackModel
-      .find({ status: { $nin: [Status.DELETED, Status.BANNED] } })
-      .select(POPULATE_SELECT)
+      .find({ ...ACTIVE_FILTER })
+      .select(TRACK_LITE_SELECT)
       .populate([
-        { path: 'album', select: POPULATE_SELECT },
-        { path: 'artists', select: POPULATE_SELECT }
+        { path: 'album', select: ALBUM_LITE_SELECT, match: ACTIVE_FILTER },
+        { path: 'artists', select: ARTIST_LITE_SELECT, match: ACTIVE_FILTER }
       ])
       .lean()
       .exec()

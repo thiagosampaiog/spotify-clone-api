@@ -26,7 +26,7 @@ export class PlaylistController {
   async removeTrack(
     @Param('playlistId') playlistId: string,
     @Param('userId') userId: string,
-    @Param('trackId') entryId: string
+    @Param('entryId') entryId: string
   ): Promise<Playlist> {
     return this.playlistService.removeTrack(playlistId, userId, entryId)
   }

@@ -103,8 +103,8 @@ export class PlaylistService {
     if (!playlist) throw new NotFoundException('Playlist not found')
 
     const entry = playlist.tracks.find((t) => t._id.toString() === entryId)
-
-    if (!entry) throw new NotFoundException('Track not found')
+    
+    if (!entry) throw new NotFoundException('Entry not found')
 
     const track = await this.trackModel
       .findOne({
