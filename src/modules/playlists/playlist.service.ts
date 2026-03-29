@@ -69,7 +69,7 @@ export class PlaylistService {
     ])
     if (!track) throw new NotFoundException('Track not found')
 
-    if (playlist.user.toString() !== userId) {
+    if (playlist.user._id.toString() !== userId) {
       throw new ForbiddenException('You do not have permission to edit this playlist')
     }
 
@@ -77,7 +77,7 @@ export class PlaylistService {
       .findByIdAndUpdate(
         playlist._id,
         {
-          $push: { tracks: track._id },
+          $push: { tracks: { track: track._id, addedAt: new Date() } },
           $inc: {
             totalTracks: 1,
             totalDurationMs: track.durationMs
@@ -94,11 +94,53 @@ export class PlaylistService {
     return updatedPlaylist.toObject()
   }
 
+  async removeTrack(playlistId: string, userId: string, trackId: string): Promise<Playlist> {
+    const playlist = await this.playlistModel.findOne({
+      _id: playlistId,
+      user: userId,
+      status: { $nin: [Status.BANNED, Status.DELETED] }
+    })
+
+    if (!playlist) throw new NotFoundException('Playlist not found')
+
+    if (playlist.tracks === null) {
+      throw new NotFoundException('Playlist is empty')
+    }
+
+    const track = await this.trackModel
+      .findOne({
+        _id: trackId,
+        status: { $nin: [Status.BANNED, Status.DELETED] }
+      })
+      .lean()
+      .exec()
+
+    if (!track) throw new NotFoundException('Track not found')
+
+    const updated = await this.playlistModel
+      .findOneAndUpdate(
+        { _id: playlist._id, user: userId, status: { $nin: [Status.BANNED, Status.DELETED] } },
+        {
+          $pull: { tracks: { track: track._id, addedAt: new Date() } },
+          $inc: { totalTracks: -1, totalDurationMs: -track.durationMs }
+        },
+        { returnDocument: 'after' }
+      )
+      .exec()
+
+    if (!updated) throw new NotFoundException('Playlist not found')
+
+    return updated
+  }
+
   async findOneMyPlaylist(playlistId: string, userId: string): Promise<Playlist> {
     const entity = await this.playlistModel
       .findOne({ _id: playlistId, user: userId, status: { $nin: [Status.BANNED, Status.DELETED] } })
       .select(POPULATE_SELECT)
-      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
+      .populate([
+        { path: 'tracks', select: POPULATE_SELECT },
+        { path: 'user', select: 'imageUrl name' }
+      ])
       .lean()
       .exec()
     if (!entity) throw new NotFoundException(`Playlist not found`)
@@ -112,7 +154,10 @@ export class PlaylistService {
         status: { $nin: [Status.BANNED, Status.DELETED] }
       })
       .select(POPULATE_SELECT)
-      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
+      .populate([
+        { path: 'tracks', select: POPULATE_SELECT },
+        { path: 'user', select: 'imageUrl name' }
+      ])
       .lean()
       .exec()
   }
@@ -121,7 +166,10 @@ export class PlaylistService {
     return this.playlistModel
       .find({ status: { $nin: [Status.BANNED, Status.DELETED] } })
       .select(POPULATE_SELECT)
-      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
+      .populate([
+        { path: 'tracks', select: POPULATE_SELECT },
+        { path: 'user', select: 'imageUrl name' }
+      ])
       .lean()
       .exec()
   }
@@ -130,7 +178,10 @@ export class PlaylistService {
     return this.playlistModel
       .findOne({ _id: playlistId, status: { $nin: [Status.BANNED, Status.DELETED] } })
       .select(POPULATE_SELECT)
-      .populate([{ path: 'tracks', select: POPULATE_SELECT }, { path: 'user', select: 'imageUrl name'}])
+      .populate([
+        { path: 'tracks', select: POPULATE_SELECT },
+        { path: 'user', select: 'imageUrl name' }
+      ])
       .lean()
       .exec()
   }

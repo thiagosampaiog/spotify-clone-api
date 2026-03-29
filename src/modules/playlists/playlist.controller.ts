@@ -22,6 +22,15 @@ export class PlaylistController {
     return this.playlistService.addTrack(input, playlistId, userId)
   }
 
+  @Delete(':playlistId/users/:userId/tracks/:trackId')
+  async removeTrack(
+    @Param('playlistId') playlistId: string,
+    @Param('userId') userId: string,
+    @Param('trackId') trackId: string
+  ): Promise<Playlist> {
+    return this.playlistService.removeTrack(playlistId, userId, trackId)
+  }
+
   @Get(':id/users/:userId')
   async findOneMyPlaylist(@Param('id') playlistId: string, @Param('userId') userId: string): Promise<Playlist> {
     return this.playlistService.findOneMyPlaylist(playlistId, userId)

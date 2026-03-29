@@ -4,6 +4,17 @@ import * as mongoose from 'mongoose'
 
 export type PlaylistDocument = mongoose.HydratedDocument<Playlist>
 
+@Schema()
+export class TracksNested {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Track' })
+  track: mongoose.Types.ObjectId
+
+  @Prop({ default: Date.now })
+  addedAt: Date
+}
+
+export const TracksNestedSchema = SchemaFactory.createForClass(TracksNested)
+
 @Schema({ timestamps: true })
 export class Playlist {
   _id: mongoose.Types.ObjectId
@@ -11,8 +22,8 @@ export class Playlist {
   @Prop({ required: true })
   name: string
 
-  @Prop({ default: [], type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }] })
-  tracks: mongoose.Types.ObjectId[]
+  @Prop({ type: [TracksNestedSchema], default: [] })
+  tracks: TracksNested[]
 
   @Prop({ default: 0 })
   totalTracks: number
@@ -40,4 +51,4 @@ export const PlaylistSchema = SchemaFactory.createForClass(Playlist)
 
 // find playlist by user
 PlaylistSchema.index({ user: 1, name: 1 })
-PlaylistSchema.index({ tracks: 1 })
+PlaylistSchema.index({ 'tracks.track': 1 })
