@@ -5,7 +5,9 @@ import { Model } from 'mongoose'
 import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
 import {
   ACTIVE_FILTER,
+  ALBUM_DETAIL_SELECT,
   ALBUM_LITE_SELECT,
+  ARTIST_DETAIL_SELECT,
   ARTIST_LITE_SELECT,
   MONGO_ERRORS,
   POPULATE_SELECT,
@@ -33,7 +35,7 @@ export class TrackService {
 
       const [album, artistsCount] = await Promise.all([
         this.albumModel
-          .findOne({ _id: input.album, status: { $nin: [Status.DELETED, Status.BANNED] } })
+          .findOne({ _id: input.album, ...ACTIVE_FILTER })
           .lean()
           .exec(),
         this.artistModel
@@ -87,12 +89,12 @@ export class TrackService {
     const entity = await this.trackModel
       .findOne({
         _id: trackId,
-        status: { $nin: [Status.DELETED, Status.BANNED] }
+        ...ACTIVE_FILTER
       })
       .select(TRACK_DETAIL_SELECT)
       .populate([
-        { path: 'artists', select: ARTIST_LITE_SELECT  },
-        { path: 'album', select: ALBUM_LITE_SELECT }
+        { path: 'artists', select: ARTIST_DETAIL_SELECT },
+        { path: 'album', select: ALBUM_DETAIL_SELECT }
       ])
       .lean()
       .exec()
@@ -114,9 +116,7 @@ export class TrackService {
 
   async update(input: UpdateTrackDto, trackId: string): Promise<Track> {
     if (input.album) {
-      const albumExists = await this.albumModel
-        .exists({ _id: input.album, status: { $nin: [Status.DELETED, Status.BANNED] } })
-        .exec()
+      const albumExists = await this.albumModel.exists({ _id: input.album, ...ACTIVE_FILTER }).exec()
       if (!albumExists) throw new NotFoundException('Album not found')
     }
 
@@ -124,7 +124,7 @@ export class TrackService {
       const artistsCount = await this.artistModel
         .countDocuments({
           _id: { $in: input.artists },
-          status: { $nin: [Status.DELETED, Status.BANNED] }
+          ...ACTIVE_FILTER
         })
         .exec()
 
@@ -137,7 +137,7 @@ export class TrackService {
       .findOneAndUpdate(
         {
           _id: trackId,
-          status: { $nin: [Status.DELETED, Status.BANNED] }
+          ...ACTIVE_FILTER
         },
         {
           $set: input
@@ -152,7 +152,7 @@ export class TrackService {
   async delete(trackId: string): Promise<Track> {
     const deleted = await this.trackModel
       .findOneAndUpdate(
-        { _id: trackId, status: { $ne: Status.DELETED } },
+        { _id: trackId, ...ACTIVE_FILTER },
         {
           status: Status.DELETED,
           deletedAt: new Date()

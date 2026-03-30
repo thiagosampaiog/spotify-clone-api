@@ -18,9 +18,11 @@ export const TRACK_DETAIL_SELECT = '-__v -createdAt -updatedAt -deletedAt'
 
 export const ALBUM_LITE_SELECT = 'id name imageUrl artist'
 
-export const ARTIST_LITE_SELECT = 'id name imageUrl'
-
 export const ALBUM_DETAIL_SELECT = '-__v -createdAt -updatedAt -deletedAt'
+
+export const ARTIST_DETAIL_SELECT = '-__v -createdAt -updatedAt -deletedAt'
+
+export const ARTIST_LITE_SELECT = 'id name imageUrl'
 
 export const USER_SELECT = 'id name imageUrl'
 
