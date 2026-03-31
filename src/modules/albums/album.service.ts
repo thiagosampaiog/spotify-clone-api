@@ -3,7 +3,15 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Album } from './contract/album.schema'
 import { Model } from 'mongoose'
 import { CreateAlbumDto, UpdateAlbumDto } from './contract/album.dto'
-import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
+import {
+  ACTIVE_FILTER,
+  ALBUM_DETAIL_SELECT,
+  ALBUM_LITE_SELECT,
+  ARTIST_DETAIL_SELECT,
+  ARTIST_LITE_SELECT,
+  MONGO_ERRORS,
+  POPULATE_SELECT
+} from '@app/common/constants'
 import { Artist } from '../artists/contract/artists.schema'
 import { Status } from '@app/common/enums'
 
@@ -25,7 +33,7 @@ export class AlbumService {
 
       const exists = await this.artistModel.exists({
         _id: input.artist,
-        status: { $nin: [Status.DELETED, Status.BANNED] }
+        ...ACTIVE_FILTER
       })
       if (!exists) throw new NotFoundException(`Artist not found`)
 
@@ -50,9 +58,9 @@ export class AlbumService {
 
   async findById(albumId: string): Promise<Album> {
     const entity = await this.albumModel
-      .findOne({ _id: albumId, status: { $nin: [Status.DELETED, Status.BANNED] } })
-      .select(POPULATE_SELECT)
-      .populate({ path: 'artist', select: POPULATE_SELECT })
+      .findOne({ _id: albumId, ...ACTIVE_FILTER })
+      .select(ALBUM_DETAIL_SELECT)
+      .populate({ path: 'artist', select: ARTIST_DETAIL_SELECT })
       .lean()
       .exec()
     if (!entity) throw new NotFoundException(`Album not found`)
@@ -61,9 +69,9 @@ export class AlbumService {
 
   async findAll(): Promise<Album[]> {
     return this.albumModel
-      .find({ status: { $nin: [Status.DELETED, Status.BANNED] } })
-      .select(POPULATE_SELECT)
-      .populate({ path: 'artist', select: POPULATE_SELECT })
+      .find({ ...ACTIVE_FILTER })
+      .select(ALBUM_LITE_SELECT)
+      .populate({ path: 'artist', select: ARTIST_LITE_SELECT })
       .lean()
       .exec()
   }
@@ -72,7 +80,7 @@ export class AlbumService {
     if (input.artist) {
       const artistExists = await this.artistModel.exists({
         _id: input.artist,
-        status: { $nin: [Status.DELETED, Status.BANNED] }
+        ...ACTIVE_FILTER
       })
       if (!artistExists) throw new NotFoundException('Artist not found')
     }
@@ -80,7 +88,7 @@ export class AlbumService {
     const updated = await this.albumModel.findOneAndUpdate(
       {
         _id: albumId,
-        status: { $nin: [Status.DELETED, Status.BANNED] }
+        ...ACTIVE_FILTER
       },
       {
         $set: input
@@ -96,7 +104,7 @@ export class AlbumService {
 
   async delete(albumId: string): Promise<Album> {
     const deleted = await this.albumModel.findOneAndUpdate(
-      { _id: albumId, status: { $ne: Status.DELETED } },
+      { _id: albumId, ...ACTIVE_FILTER },
       { $set: { status: Status.DELETED, deletedAt: new Date() } },
       {
         returnDocument: 'after'

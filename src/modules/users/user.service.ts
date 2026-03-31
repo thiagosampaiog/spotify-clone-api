@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { User } from './contract/users.schema'
 import { Model } from 'mongoose'
 import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
-import { MONGO_ERRORS } from '@app/common/constants'
+import { ACTIVE_FILTER, MONGO_ERRORS } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 
 @Injectable()
@@ -14,7 +14,7 @@ export class UserService {
   ) {}
   async findById(userId: string): Promise<User> {
     const found = await this.userModel
-      .findOne({ _id: userId, status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .findOne({ _id: userId, ...ACTIVE_FILTER })
       .lean()
       .exec()
     if (!found) throw new NotFoundException(`User not found`)
@@ -23,7 +23,7 @@ export class UserService {
 
   async findAll(): Promise<User[]> {
     return this.userModel
-      .find({ status: { $nin: [Status.BANNED, Status.DELETED] } })
+      .find({ ...ACTIVE_FILTER })
       .lean()
       .exec()
   }
@@ -43,11 +43,7 @@ export class UserService {
 
   async update(input: UpdateUserDto, userId: string): Promise<User> {
     const updated = await this.userModel
-      .findOneAndUpdate(
-        { _id: userId, status: { $nin: [Status.BANNED, Status.DELETED] } },
-        { $set: input },
-        { returnDocument: 'after' }
-      )
+      .findOneAndUpdate({ _id: userId, ...ACTIVE_FILTER }, { $set: input }, { returnDocument: 'after' })
       .lean()
       .exec()
 
@@ -61,7 +57,7 @@ export class UserService {
       .findOneAndUpdate(
         {
           _id: userId,
-          status: { $ne: Status.DELETED }
+          ...ACTIVE_FILTER
         },
         {
           $set: { status: Status.DELETED, deletedAt: new Date() }

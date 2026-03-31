@@ -2,7 +2,13 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Model } from 'mongoose'
 import { Artist } from './contract/artists.schema'
 import { CreateArtistDto, type UpdateArtistDto } from './contract/artist.dto'
-import { MONGO_ERRORS, POPULATE_SELECT } from '@app/common/constants'
+import {
+  ACTIVE_FILTER,
+  ARTIST_DETAIL_SELECT,
+  ARTIST_LITE_SELECT,
+  MONGO_ERRORS,
+  POPULATE_SELECT
+} from '@app/common/constants'
 import { InjectModel } from '@nestjs/mongoose'
 import { Status } from '@app/common/enums'
 
@@ -16,9 +22,9 @@ export class ArtistsService {
   async findAll(): Promise<Artist[]> {
     return this.artistModel
       .find({
-        status: { $nin: [Status.DELETED, Status.BANNED] }
+        ...ACTIVE_FILTER
       })
-      .select(POPULATE_SELECT)
+      .select(ARTIST_LITE_SELECT)
       .lean()
       .exec()
   }
@@ -27,9 +33,9 @@ export class ArtistsService {
     const found = await this.artistModel
       .findOne({
         _id: artistId,
-        status: { $nin: [Status.DELETED, Status.BANNED] }
+        ...ACTIVE_FILTER
       })
-      .select(POPULATE_SELECT)
+      .select(ARTIST_DETAIL_SELECT)
       .lean()
       .exec()
     if (!found) throw new NotFoundException('Artist not found')
@@ -51,11 +57,7 @@ export class ArtistsService {
 
   async update(input: UpdateArtistDto, artistId: string): Promise<Artist> {
     const updated = await this.artistModel
-      .findOneAndUpdate(
-        { _id: artistId, status: { $nin: [Status.DELETED, Status.BANNED] } },
-        { $set: input },
-        { returnDocument: 'after' }
-      )
+      .findOneAndUpdate({ _id: artistId, ...ACTIVE_FILTER }, { $set: input }, { returnDocument: 'after' })
       .lean()
       .exec()
     if (!updated) throw new NotFoundException(`Artist not found`)
@@ -67,7 +69,7 @@ export class ArtistsService {
       .findOneAndUpdate(
         {
           _id: artistId,
-          status: { $nin: [Status.DELETED, Status.BANNED] }
+          ...ACTIVE_FILTER
         },
         {
           $set: { status: Status.DELETED, deletedAt: new Date() }
