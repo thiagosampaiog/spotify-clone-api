@@ -9,8 +9,7 @@ import {
   ALBUM_LITE_SELECT,
   ARTIST_DETAIL_SELECT,
   ARTIST_LITE_SELECT,
-  MONGO_ERRORS,
-  POPULATE_SELECT
+  MONGO_ERRORS
 } from '@app/common/constants'
 import { Artist } from '../artists/contract/artists.schema'
 import { Status } from '@app/common/enums'
@@ -60,7 +59,7 @@ export class AlbumService {
     const entity = await this.albumModel
       .findOne({ _id: albumId, ...ACTIVE_FILTER })
       .select(ALBUM_DETAIL_SELECT)
-      .populate({ path: 'artist', select: ARTIST_DETAIL_SELECT })
+      .populate({ path: 'artist', select: ARTIST_DETAIL_SELECT, match: ACTIVE_FILTER })
       .lean()
       .exec()
     if (!entity) throw new NotFoundException(`Album not found`)
@@ -71,7 +70,7 @@ export class AlbumService {
     return this.albumModel
       .find({ ...ACTIVE_FILTER })
       .select(ALBUM_LITE_SELECT)
-      .populate({ path: 'artist', select: ARTIST_LITE_SELECT })
+      .populate({ path: 'artist', select: ARTIST_LITE_SELECT, match: ACTIVE_FILTER })
       .lean()
       .exec()
   }

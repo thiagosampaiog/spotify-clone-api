@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException
-} from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Playlist } from './contract/playlist.schema'
@@ -14,7 +8,6 @@ import {
   MONGO_ERRORS,
   PLAYLIST_DETAIL_SELECT,
   PLAYLIST_LITE_SELECT,
-  POPULATE_SELECT,
   TRACK_DETAIL_SELECT,
   TRACK_LITE_SELECT,
   USER_DETAIL_SELECT,
@@ -154,8 +147,8 @@ export class PlaylistService {
       .findOne({ _id: playlistId, user: userId, ...ACTIVE_FILTER })
       .select(PLAYLIST_DETAIL_SELECT)
       .populate([
-        { path: 'tracks', select: TRACK_DETAIL_SELECT },
-        { path: 'user', select: USER_DETAIL_SELECT }
+        { path: 'tracks.track', select: TRACK_DETAIL_SELECT, match: ACTIVE_FILTER },
+        { path: 'user', select: USER_DETAIL_SELECT, match: ACTIVE_FILTER }
       ])
       .lean()
       .exec()
@@ -171,8 +164,8 @@ export class PlaylistService {
       })
       .select(PLAYLIST_LITE_SELECT)
       .populate([
-        { path: 'tracks', select: TRACK_LITE_SELECT },
-        { path: 'user', select: USER_LITE_SELECT }
+        { path: 'tracks.track', select: TRACK_LITE_SELECT, match: ACTIVE_FILTER },
+        { path: 'user', select: USER_LITE_SELECT, match: ACTIVE_FILTER }
       ])
       .lean()
       .exec()
@@ -183,8 +176,8 @@ export class PlaylistService {
       .find({ ...ACTIVE_FILTER, isPublic: true })
       .select(PLAYLIST_LITE_SELECT)
       .populate([
-        { path: 'tracks', select: TRACK_LITE_SELECT },
-        { path: 'user', select: USER_LITE_SELECT }
+        { path: 'tracks.track', select: TRACK_LITE_SELECT, match: ACTIVE_FILTER },
+        { path: 'user', select: USER_LITE_SELECT, match: ACTIVE_FILTER }
       ])
       .lean()
       .exec()
@@ -192,11 +185,11 @@ export class PlaylistService {
 
   async findOnePublic(playlistId: string) {
     const entity = await this.playlistModel
-      .findOne({ _id: playlistId, ...ACTIVE_FILTER })
+      .findOne({ _id: playlistId, ...ACTIVE_FILTER, isPublic: true })
       .select(PLAYLIST_DETAIL_SELECT)
       .populate([
-        { path: 'tracks', select: TRACK_DETAIL_SELECT },
-        { path: 'user', select: USER_DETAIL_SELECT }
+        { path: 'tracks.track', select: TRACK_DETAIL_SELECT, match: ACTIVE_FILTER },
+        { path: 'user', select: USER_DETAIL_SELECT, match: ACTIVE_FILTER }
       ])
       .lean()
       .exec()

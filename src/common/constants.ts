@@ -26,6 +26,6 @@ export const ARTIST_LITE_SELECT = 'id name imageUrl'
 
 export const USER_LITE_SELECT = 'id name imageUrl'
 
-export const USER_DETAIL_SELECT = '-__v -createdAt -updatedAt -status -deletedAt'
+export const USER_DETAIL_SELECT = '-__v -status'
 
 export const POPULATE_SELECT = '-__v -status -createdAt -updatedAt -deletedAt'

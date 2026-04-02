@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { User } from './contract/users.schema'
 import { Model } from 'mongoose'
 import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
-import { ACTIVE_FILTER, MONGO_ERRORS } from '@app/common/constants'
+import { ACTIVE_FILTER, MONGO_ERRORS, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/constants'
 import { Status } from '@app/common/enums'
 
 @Injectable()
@@ -15,6 +15,7 @@ export class UserService {
   async findById(userId: string): Promise<User> {
     const found = await this.userModel
       .findOne({ _id: userId, ...ACTIVE_FILTER })
+      .select(USER_DETAIL_SELECT)
       .lean()
       .exec()
     if (!found) throw new NotFoundException(`User not found`)
@@ -24,6 +25,7 @@ export class UserService {
   async findAll(): Promise<User[]> {
     return this.userModel
       .find({ ...ACTIVE_FILTER })
+      .select(USER_LITE_SELECT)
       .lean()
       .exec()
   }
