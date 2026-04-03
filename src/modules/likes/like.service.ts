@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Like } from './contract/like.schema'
 import { Model } from 'mongoose'
@@ -23,35 +23,38 @@ export class LikeService {
   ) {}
 
   async toggleLike(input: ToggleLikeDto, targetId: string, userId: string) {
-    // I can use an switch case here?
-    // I need to be fast here, so I can just dont return document an use just deleteOne
-    // I can use then? I need to verify if the item exists first
-    if (input.targetType === LikesTargets.ALBUM) {
-      const album = await this.albumModel.exists({ _id: targetId, ...ACTIVE_FILTER })
-      if (!album) throw new NotFoundException('Album not found')
-      const isLiked = await this.likeModel.exists({
-        user: userId,
-        targetId: targetId,
-        targetType: input.targetType
-      })
-      if (isLiked) {
-        await this.likeModel.findOneAndDelete(
-          {
-            user: userId,
-            targetId: targetId,
-            targetType: input.targetType
-          },
-          { returnDocument: 'after' }
-        )
-      } else {
-        await this.likeModel
-          .create({
-            user: userId,
-            targetId: targetId,
-            targetType: input.targetType
-          })
-          .then((r) => r.save())
-      }
+    const modelType: Record<LikesTargets, Model<any>> = {
+      [LikesTargets.ALBUM]: this.albumModel,
+      [LikesTargets.TRACK]: this.trackModel,
+      [LikesTargets.PLAYLIST]: this.playlistModel
+    }
+
+    const target = modelType[input.targetType]
+
+    let playlist: Playlist | null = null
+
+    if (input.targetType === LikesTargets.PLAYLIST) {
+      playlist = await target.findOne({ _id: targetId, ...ACTIVE_FILTER })
+      if (!playlist) throw new NotFoundException('Playlist not found')
+      if (!playlist.isPublic && !playlist.user.equals(userId)) throw new ForbiddenException('Playlist is private')
+    } else {
+      const exists = await target.exists({ _id: targetId, ...ACTIVE_FILTER })
+      if (!exists) throw new NotFoundException(`${input.targetType} not found`)
+    }
+
+    const data = {
+      user: userId,
+      targetId: targetId,
+      targetType: input.targetType
+    }
+
+    const isLiked = await this.likeModel.exists(data)
+    if (isLiked) {
+      await this.likeModel.findOneAndDelete(data)
+      return { liked: false }
+    } else {
+      await this.likeModel.create(data)
+      return { liked: true }
     }
   }
 }
