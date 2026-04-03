@@ -22,6 +22,7 @@ export class LikeService {
     private playlistModel: Model<Playlist>
   ) {}
 
+  // TODO: Add a few focused tests for toggle idempotency, not found, and duplicates
   async toggleLike(input: ToggleLikeDto, targetId: string, userId: string) {
     const modelType: Record<LikesTargets, Model<any>> = {
       [LikesTargets.ALBUM]: this.albumModel,
@@ -57,4 +58,6 @@ export class LikeService {
       return { liked: true }
     }
   }
+
+  // TODO: Find My Songs Liked
 }
