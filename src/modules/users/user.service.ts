@@ -30,6 +30,13 @@ export class UserService {
       .exec()
   }
 
+  async findUser(email: string) {
+    return this.userModel
+      .findOne({ email: email, ...ACTIVE_FILTER })
+      .lean()
+      .exec()
+  }
+
   async create(input: CreateUserDto): Promise<User> {
     try {
       const entity = new this.userModel({ ...input, status: Status.ACTIVE })
