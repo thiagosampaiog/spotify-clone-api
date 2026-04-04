@@ -1,11 +1,13 @@
-import { Status } from '@app/common/enums'
+import { Status, UserRole } from '@app/common/types/enums'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 
 export type UserDocument = HydratedDocument<User>
 
 @Schema({ timestamps: true })
 export class User {
+  _id: mongoose.Types.ObjectId
+
   @Prop({ required: true, unique: true })
   email: string
 
@@ -14,6 +16,9 @@ export class User {
 
   @Prop({ required: true })
   name: string
+
+  @Prop({ default: UserRole.DEFAULT, enum: UserRole })
+  role: UserRole
 
   @Prop({ required: true })
   imageUrl: string

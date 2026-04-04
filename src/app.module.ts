@@ -7,6 +7,8 @@ import { AlbumModule } from './modules/albums/album.module'
 import { TrackModule } from './modules/tracks/track.module'
 import { PlaylistModule } from './modules/playlists/playlist.module'
 import { LikeModule } from './modules/likes/like.module'
+import { APP_GUARD } from '@nestjs/core'
+import { RolesGuard } from './common/guards/roles.guard'
 
 @Module({
   imports: [
@@ -20,6 +22,12 @@ import { LikeModule } from './modules/likes/like.module'
     TrackModule,
     PlaylistModule,
     LikeModule
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard
+    }
   ]
 })
 export class AppModule {}

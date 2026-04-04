@@ -10,9 +10,9 @@ import {
   ARTIST_DETAIL_SELECT,
   ARTIST_LITE_SELECT,
   MONGO_ERRORS
-} from '@app/common/constants'
+} from '@app/common/types/constants'
 import { Artist } from '../artists/contract/artists.schema'
-import { Status } from '@app/common/enums'
+import { Status } from '@app/common/types/enums'
 
 @Injectable()
 export class AlbumService {

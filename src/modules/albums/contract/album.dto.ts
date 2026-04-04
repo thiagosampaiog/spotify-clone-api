@@ -1,4 +1,4 @@
-import { Genres } from '@app/common/enums'
+import { Genres } from '@app/common/types/enums'
 import { PartialType } from '@nestjs/swagger'
 import {
   ArrayNotEmpty,
@@ -34,7 +34,7 @@ export class CreateAlbumDto {
 
   @IsDateString()
   @IsOptional()
-  releasedAt?: string;
+  releasedAt?: string
 }
 
 export class UpdateAlbumDto extends PartialType(CreateAlbumDto) {}

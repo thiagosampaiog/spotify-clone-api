@@ -1,10 +1,10 @@
 import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { User } from './contract/users.schema'
+import { User, UserDocument } from './contract/users.schema'
 import { Model } from 'mongoose'
 import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
-import { ACTIVE_FILTER, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/constants'
-import { Status } from '@app/common/enums'
+import { ACTIVE_FILTER, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/types/constants'
+import { Status } from '@app/common/types/enums'
 import { HashingProvider } from '../../infra/hashing/hashing.provider'
 
 @Injectable()
@@ -12,10 +12,14 @@ export class UserService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
-
-    @Inject(forwardRef(() => HashingProvider))
-    private readonly hashingProvider: HashingProvider
+    private hashingProvider: HashingProvider
   ) {}
+
+  private sanitize(user: User): Omit<User, 'password'> {
+    const { password, ...rest } = user
+    return rest
+  }
+
   async findById(userId: string): Promise<User> {
     const found = await this.userModel
       .findOne({ _id: userId, ...ACTIVE_FILTER })
@@ -52,10 +56,9 @@ export class UserService {
       status: Status.ACTIVE
     })
 
-    await user.save()
+    const saved = await user.save()
 
-    const { password, ...userWithoutPassword } = user.toObject()
-    return userWithoutPassword
+    return this.sanitize(saved)
   }
 
   async update(input: UpdateUserDto, userId: string): Promise<User> {

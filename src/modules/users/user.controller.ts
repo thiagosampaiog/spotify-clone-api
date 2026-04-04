@@ -17,11 +17,6 @@ export class UserController {
     return this.userService.findById(userId)
   }
 
-  @Post()
-  async create(@Body() input: CreateUserDto): Promise<User> {
-    return this.userService.create(input)
-  }
-
   @Patch(':id')
   async update(@Body() input: UpdateUserDto, @Param('id') userId: string): Promise<User> {
     return this.userService.update(input, userId)

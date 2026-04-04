@@ -1,4 +1,4 @@
-import { LikesTargets } from '@app/common/enums'
+import { LikesTargets } from '@app/common/types/enums'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import * as mongoose from 'mongoose'
 
