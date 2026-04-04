@@ -10,10 +10,17 @@ import { LikeModule } from './modules/likes/like.module'
 import { APP_GUARD } from '@nestjs/core'
 import { RolesGuard } from './common/guards/roles.guard'
 
+import databaseConfig from './infra/config/database.config'
+import appConfig from './infra/config/app.config'
+
+const ENV = process.env.NODE_ENV
+
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
+      envFilePath: !ENV ? '.env' : `.env.${ENV.trim()}`,
+      load: [appConfig, databaseConfig]
     }),
     DatabaseModule,
     ArtistModule,

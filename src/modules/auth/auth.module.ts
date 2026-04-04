@@ -14,7 +14,7 @@ import { HashingModule } from '@app/infra/hashing/hashing.module'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
+        secret: config.get<string>('jwt.JWT_SECRET'),
         signOptions: { expiresIn: '24h' }
       })
     })
