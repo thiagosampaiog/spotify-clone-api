@@ -1,6 +1,6 @@
-import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { User, UserDocument } from './contract/users.schema'
+import { User } from './contract/users.schema'
 import { Model } from 'mongoose'
 import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
 import { ACTIVE_FILTER, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/types/constants'
@@ -41,6 +41,15 @@ export class UserService {
   async findUser(email: string) {
     return this.userModel
       .findOne({ email: email, ...ACTIVE_FILTER })
+      .select('-password')
+      .lean()
+      .exec()
+  }
+
+  async findUserForLogin(email: string) {
+    return this.userModel
+      .findOne({ email: email, ...ACTIVE_FILTER })
+      .select('+password name email _id role')
       .lean()
       .exec()
   }

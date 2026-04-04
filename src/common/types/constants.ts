@@ -26,6 +26,6 @@ export const ARTIST_LITE_SELECT = 'id name imageUrl'
 
 export const USER_LITE_SELECT = 'id name imageUrl'
 
-export const USER_DETAIL_SELECT = '-__v -status -role'
+export const USER_DETAIL_SELECT = '-__v -status -password'
 
 export const POPULATE_SELECT = '-__v -status -createdAt -updatedAt -deletedAt'
