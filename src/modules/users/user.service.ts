@@ -1,16 +1,20 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { User } from './contract/users.schema'
 import { Model } from 'mongoose'
 import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
-import { ACTIVE_FILTER, MONGO_ERRORS, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/constants'
+import { ACTIVE_FILTER, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/constants'
 import { Status } from '@app/common/enums'
+import { HashingProvider } from '../../infra/hashing/hashing.provider'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<User>
+    private userModel: Model<User>,
+
+    @Inject(forwardRef(() => HashingProvider))
+    private readonly hashingProvider: HashingProvider
   ) {}
   async findById(userId: string): Promise<User> {
     const found = await this.userModel
@@ -37,17 +41,21 @@ export class UserService {
       .exec()
   }
 
-  async create(input: CreateUserDto): Promise<User> {
-    try {
-      const entity = new this.userModel({ ...input, status: Status.ACTIVE })
-      await entity.save()
-      return entity.toObject()
-    } catch (error) {
-      if (error.code === MONGO_ERRORS.DUPLICATE_KEY) {
-        throw new ConflictException('User already exists')
-      }
-      throw error
-    }
+  async create(input: CreateUserDto): Promise<Omit<User, 'password'>> {
+    const exists = await this.userModel.exists({ email: input.email })
+
+    if (exists) throw new ConflictException('This email address is already in use')
+
+    const user = new this.userModel({
+      ...input,
+      password: await this.hashingProvider.hashPassword(input.password),
+      status: Status.ACTIVE
+    })
+
+    await user.save()
+
+    const { password, ...userWithoutPassword } = user.toObject()
+    return userWithoutPassword
   }
 
   async update(input: UpdateUserDto, userId: string): Promise<User> {

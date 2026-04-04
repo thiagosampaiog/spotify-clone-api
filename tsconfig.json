@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "ignoreDeprecations": "6.0",
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -15,18 +16,29 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
+    "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-        "paths": {
-      "@app/*": ["./src/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@common/*": ["./src/common/*"],
-      "@config/*": ["./src/config/*"],
-      "@database/*": ["./src/database/*"],
+    "paths": {
+      "@app/*": [
+        "./src/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@common/*": [
+        "./src/common/*"
+      ],
+      "@config/*": [
+        "./src/config/*"
+      ],
+      "@database/*": [
+        "./src/database/*"
+      ],
     }
   }
 }

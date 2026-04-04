@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import { ConflictException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { UserService } from '../users/user.service'
 import { Status } from '@app/common/enums'
@@ -12,8 +12,7 @@ export class AuthService {
   ) {}
 
   public async signup(input: CreateUserDto): Promise<any> {
-    const { email, imageUrl, name, password } = input;
-    const user = await this.userService.findUser(email)
-    if (user) throw new ConflictException('This email address is already in use')
+    const user = await this.userService.create(input);
+    
   }
 }
