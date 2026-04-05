@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import { PlaylistService } from './playlist.service'
 import { Playlist } from './contract/playlist.schema'
 import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
@@ -13,27 +13,26 @@ export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Post('users/me')
+  @Post()
   async create(@Body() input: CreatePlaylistDto, @CurrentUser() user: AuthenticatedUser): Promise<Playlist> {
     const userId = user.sub
     return this.playlistService.create(input, userId)
   }
 
   @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Post(':playlistId/users/me/tracks')
+  @Post(':id/tracks')
   async addTrack(
     @Body() input: AddPlaylistTrackDto,
-    @Param('playlistId') playlistId: string,
+    @Param('id') playlistId: string,
     @CurrentUser() user: AuthenticatedUser
   ): Promise<Playlist> {
     const userId = user.sub
     return this.playlistService.addTrack(input, playlistId, userId)
   }
 
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Delete(':playlistId/users/me/tracks/:entryId')
+  @Delete(':id/tracks/:entryId')
   async removeTrack(
-    @Param('playlistId') playlistId: string,
+    @Param('id') playlistId: string,
     @CurrentUser() user: AuthenticatedUser,
     @Param('entryId') entryId: string
   ): Promise<Playlist> {
@@ -41,50 +40,31 @@ export class PlaylistController {
     return this.playlistService.removeTrack(playlistId, userId, entryId)
   }
 
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Get(':id/users/me')
-  async findOneMyPlaylist(
-    @Param('id') playlistId: string,
-    @CurrentUser() user: AuthenticatedUser
-  ): Promise<Playlist> {
-    const userId = user.sub
-    return this.playlistService.findOneMyPlaylist(playlistId, userId)
-  }
-
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Patch(':playlistId/users/me')
+  @Patch(':id')
   async update(
     @Body() input: UpdatePlaylistDto,
-    @Param('playlistId') playlistId: string,
+    @Param('id') playlistId: string,
     @CurrentUser() user: AuthenticatedUser
   ): Promise<Playlist> {
     const userId = user.sub
     return this.playlistService.update(input, playlistId, userId)
   }
 
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Get('users/me')
-  async findAllMyPlaylists(@CurrentUser() user: AuthenticatedUser): Promise<Playlist[]> {
-    const userId = user.sub
-    return this.playlistService.findAllMyPlaylists(userId)
-  }
-
-  @Public()
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
   @Get()
-  async findAllPublic() {
-    return this.playlistService.findAllPublic()
+  async findAll(@Query('mine') mine: boolean = false, @CurrentUser() user?: AuthenticatedUser) {
+    const userId = user?.sub
+    return this.playlistService.findAll(userId, mine)
   }
 
   @Public()
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
-  @Get(':playlistId')
-  async findOnePublic(@Param('playlistId') playlistId: string) {
-    return this.playlistService.findOnePublic(playlistId)
+  @Get(':id')
+  async findOne(@Param('id') playlistId: string, @CurrentUser() user?: AuthenticatedUser) {
+    const userId = user?.sub
+    return this.playlistService.findOne(playlistId, userId)
   }
 
-  @Delete(':playlistId/users/me')
-  async delete(@Param('playlistId') playlistId: string, @CurrentUser() user: AuthenticatedUser) {
+  @Delete(':id')
+  async delete(@Param('id') playlistId: string, @CurrentUser() user: AuthenticatedUser) {
     const userId = user.sub
     return this.playlistService.delete(playlistId, userId)
   }

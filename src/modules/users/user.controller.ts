@@ -12,26 +12,24 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
   // TODO: Public Profiles
 
-  @Roles(UserRole.DEFAULT, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Get()
   async findAll(): Promise<User[]> {
     return this.userService.findAll()
   }
 
-  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Roles(UserRole.ADMIN)
   @Get(':id')
   async findById(@Param('id') userId: string): Promise<User> {
     return this.userService.findById(userId)
   }
 
-  @Roles(UserRole.DEFAULT, UserRole.ADMIN)
   @Patch('me')
   async update(@Body() input: UpdateUserDto, @CurrentUser() user: AuthenticatedUser): Promise<User> {
     const userId = user.sub
     return this.userService.update(input, userId)
   }
 
-  @Roles(UserRole.DEFAULT, UserRole.ADMIN)
   @Delete('me')
   async delete(@CurrentUser() user: AuthenticatedUser): Promise<User> {
     const userId = user.sub

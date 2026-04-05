@@ -11,10 +11,10 @@ export class LikeController {
     private likeService: LikeService
   ) {}
 
-  @Post(':targetId/users/me')
+  @Post(':id')
   async toggleLike(
     @Body() input: ToggleLikeDto,
-    @Param('targetId') targetId: string,
+    @Param('id') targetId: string,
     @CurrentUser() user: AuthenticatedUser
   ) {
     const userId = user.sub

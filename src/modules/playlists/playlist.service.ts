@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Playlist } from './contract/playlist.schema'
@@ -63,13 +63,14 @@ export class PlaylistService {
 
   async addTrack(input: AddPlaylistTrackDto, playlistId: string, userId: string): Promise<Playlist> {
     const [playlist, track] = await Promise.all([
-      this.findOneMyPlaylist(playlistId, userId),
+      this.playlistModel.findOne({ _id: playlistId, user: userId }),
       this.trackModel
         .findOne({ _id: input.track, ...ACTIVE_FILTER }, 'durationMs')
         .lean()
         .exec()
     ])
     if (!track) throw new NotFoundException('Track not found')
+    if (!playlist) throw new NotFoundException('Playlist not found')
 
     const updatedPlaylist = await this.playlistModel
       .findByIdAndUpdate(
@@ -141,26 +142,15 @@ export class PlaylistService {
     return updated.toObject()
   }
 
-  async findOneMyPlaylist(playlistId: string, userId: string): Promise<Playlist> {
-    const entity = await this.playlistModel
-      .findOne({ _id: playlistId, user: userId, ...ACTIVE_FILTER })
-      .select(PLAYLIST_DETAIL_SELECT)
-      .populate([
-        { path: 'tracks.track', select: TRACK_DETAIL_SELECT, match: ACTIVE_FILTER },
-        { path: 'user', select: USER_DETAIL_SELECT, match: ACTIVE_FILTER }
-      ])
-      .lean()
-      .exec()
-    if (!entity) throw new NotFoundException(`Playlist not found`)
-    return entity
-  }
-
-  async findAllMyPlaylists(userId: string) {
+  async findAll(userId?: string, mine?: boolean) {
+    const filter: any = { ...ACTIVE_FILTER }
+    if (userId && mine) {
+      filter.user = userId
+    } else {
+      filter.isPublic = true
+    }
     return this.playlistModel
-      .find({
-        user: userId,
-        ...ACTIVE_FILTER
-      })
+      .find(filter)
       .select(PLAYLIST_LITE_SELECT)
       .populate([
         { path: 'tracks.track', select: TRACK_LITE_SELECT, match: ACTIVE_FILTER },
@@ -170,21 +160,11 @@ export class PlaylistService {
       .exec()
   }
 
-  async findAllPublic() {
-    return this.playlistModel
-      .find({ ...ACTIVE_FILTER, isPublic: true })
-      .select(PLAYLIST_LITE_SELECT)
-      .populate([
-        { path: 'tracks.track', select: TRACK_LITE_SELECT, match: ACTIVE_FILTER },
-        { path: 'user', select: USER_LITE_SELECT, match: ACTIVE_FILTER }
-      ])
-      .lean()
-      .exec()
-  }
-
-  async findOnePublic(playlistId: string) {
-    const entity = await this.playlistModel
-      .findOne({ _id: playlistId, ...ACTIVE_FILTER, isPublic: true })
+  // Verify user permission to this playlist
+  async findOne(playlistId: string, userId?: string) {
+    const filter: any = { _id: playlistId, ...ACTIVE_FILTER }
+    const playlist = await this.playlistModel
+      .findOne(filter)
       .select(PLAYLIST_DETAIL_SELECT)
       .populate([
         { path: 'tracks.track', select: TRACK_DETAIL_SELECT, match: ACTIVE_FILTER },
@@ -192,9 +172,13 @@ export class PlaylistService {
       ])
       .lean()
       .exec()
+    if (!playlist) throw new NotFoundException('Playlist not found')
 
-    if (!entity) throw new NotFoundException('Playlist not found')
-    return entity
+    if (!playlist.isPublic && playlist.user?._id?.toString() !== userId) {
+      throw new ForbiddenException('Access denied to this private playlist')
+    }
+
+    return playlist
   }
 
   async delete(playlistId: string, userId: string) {
