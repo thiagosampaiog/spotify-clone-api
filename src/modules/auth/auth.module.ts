@@ -5,19 +5,14 @@ import { UserModule } from '../users/user.module'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { HashingModule } from '@app/infra/hashing/hashing.module'
+import authConfig from '@app/infra/config/auth.config'
 
 @Module({
   imports: [
     UserModule,
     HashingModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('jwt.JWT_SECRET'),
-        signOptions: { expiresIn: '24h' }
-      })
-    })
+    ConfigModule.forFeature(authConfig),
+    JwtModule.registerAsync(authConfig.asProvider())
   ],
   controllers: [AuthController],
   providers: [AuthService],

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { UserService } from '../users/user.service'
 import { CreateUserDto } from '../users/contract/user.dto'
@@ -6,19 +6,26 @@ import { AuthLoginDto } from './dto/auth-login.dto'
 import { HashingProvider } from '@app/infra/hashing/hashing.provider'
 import { User } from '../users/contract/users.schema'
 import { AuthenticatedUser } from '@app/common/types/jwt.constant'
+import authConfig from '@app/infra/config/auth.config'
+import type { ConfigType } from '@nestjs/config'
 
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
-    private userService: UserService,
-    private hashingProvider: HashingProvider
+    private readonly jwtService: JwtService,
+
+    private readonly userService: UserService,
+
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
+
+    private readonly hashingProvider: HashingProvider
   ) {}
 
   private async tokenGenerator(user: Omit<User, 'password'>) {
     const payload = { sub: user._id, name: user.name, email: user.email, role: user.role }
     return {
-      access_token: await this.jwtService.signAsync(payload)
+      access_token: await this.jwtService.signAsync(payload, this.authConfiguration)
     }
   }
 
