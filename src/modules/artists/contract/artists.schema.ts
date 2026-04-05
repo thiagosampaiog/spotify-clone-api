@@ -1,4 +1,4 @@
-import { Status } from '@app/common/types/enums'
+import { Status } from '@app/common/guards/types/enums'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 

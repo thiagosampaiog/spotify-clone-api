@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Like } from './contract/like.schema'
 import { Model } from 'mongoose'
 import { ToggleLikeDto } from './contract/like.dto'
-import { LikesTargets } from '@app/common/types/enums'
+import { LikesTargets } from '@app/common/guards/types/enums'
 import { Album } from '../albums/contract/album.schema'
 import { Track } from '../tracks/contract/track.schema'
 import { Playlist } from '../playlists/contract/playlist.schema'
-import { ACTIVE_FILTER } from '@app/common/types/constants'
+import { ACTIVE_FILTER } from '@app/common/guards/types/constants'
 
 @Injectable()
 export class LikeService {

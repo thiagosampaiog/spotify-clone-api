@@ -8,9 +8,9 @@ import {
   ARTIST_LITE_SELECT,
   MONGO_ERRORS,
   POPULATE_SELECT
-} from '@app/common/types/constants'
+} from '@app/common/guards/types/constants'
 import { InjectModel } from '@nestjs/mongoose'
-import { Status } from '@app/common/types/enums'
+import { Status } from '@app/common/guards/types/enums'
 
 @Injectable()
 export class ArtistsService {

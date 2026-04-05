@@ -5,7 +5,7 @@ import { CreateUserDto } from '../users/contract/user.dto'
 import { AuthLoginDto } from './dto/auth-login.dto'
 import { HashingProvider } from '@app/infra/hashing/hashing.provider'
 import { User } from '../users/contract/users.schema'
-import { AuthenticatedUser } from '@app/common/types/jwt.constant'
+import { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
 import authConfig from '@app/infra/config/auth.config'
 import type { ConfigType } from '@nestjs/config'
 

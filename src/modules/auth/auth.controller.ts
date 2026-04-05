@@ -5,7 +5,7 @@ import { AuthGuard } from '@app/common/guards/auth.guard'
 import { Public } from '@app/common/decorators/public.decorator'
 import { CreateUserDto } from '../users/contract/user.dto'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
-import type { AuthenticatedUser } from '@app/common/types/jwt.constant'
+import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
 
 @UseGuards(AuthGuard)
 @Controller('auth')

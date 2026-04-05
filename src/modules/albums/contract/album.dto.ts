@@ -1,4 +1,4 @@
-import { Genres } from '@app/common/types/enums'
+import { Genres } from '@app/common/guards/types/enums'
 import { PartialType } from '@nestjs/swagger'
 import {
   ArrayNotEmpty,

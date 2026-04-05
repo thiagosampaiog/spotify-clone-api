@@ -1,67 +1,94 @@
-import { Body, Controller, Delete, Get, HostParam, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common'
 import { PlaylistService } from './playlist.service'
 import { Playlist } from './contract/playlist.schema'
 import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
+import { AuthGuard } from '@app/common/guards/auth.guard'
+import { CurrentUser } from '@app/common/decorators/current-user.decorator'
+import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
+import { RolesGuard } from '@app/common/guards/roles.guard'
+import { Public } from '@app/common/decorators/public.decorator'
+import { Roles } from '@app/common/decorators/role.decorator'
+import { UserRole } from '@app/common/guards/types/enums'
 
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('playlists')
 export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
-  @Post('users/:userId')
-  async create(@Body() input: CreatePlaylistDto, @Param('userId') userId: string): Promise<Playlist> {
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Post('users/me')
+  async create(@Body() input: CreatePlaylistDto, @CurrentUser() user: AuthenticatedUser): Promise<Playlist> {
+    const userId = user.sub
     return this.playlistService.create(input, userId)
   }
 
-  // I Added the id here just while I don't have jwt auth users/me
-  @Post(':playlistId/users/:userId/tracks')
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Post(':playlistId/users/me/tracks')
   async addTrack(
     @Body() input: AddPlaylistTrackDto,
     @Param('playlistId') playlistId: string,
-    @Param('userId') userId: string
+    @CurrentUser() user: AuthenticatedUser
   ): Promise<Playlist> {
+    const userId = user.sub
     return this.playlistService.addTrack(input, playlistId, userId)
   }
 
-  @Delete(':playlistId/users/:userId/tracks/:entryId')
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Delete(':playlistId/users/me/tracks/:entryId')
   async removeTrack(
     @Param('playlistId') playlistId: string,
-    @Param('userId') userId: string,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('entryId') entryId: string
   ): Promise<Playlist> {
+    const userId = user.sub
     return this.playlistService.removeTrack(playlistId, userId, entryId)
   }
 
-  @Get(':id/users/:userId')
-  async findOneMyPlaylist(@Param('id') playlistId: string, @Param('userId') userId: string): Promise<Playlist> {
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Get(':id/users/me')
+  async findOneMyPlaylist(
+    @Param('id') playlistId: string,
+    @CurrentUser() user: AuthenticatedUser
+  ): Promise<Playlist> {
+    const userId = user.sub
     return this.playlistService.findOneMyPlaylist(playlistId, userId)
   }
 
-  @Patch(':playlistId/users/:userId')
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Patch(':playlistId/users/me')
   async update(
     @Body() input: UpdatePlaylistDto,
     @Param('playlistId') playlistId: string,
-    @Param('userId') userId: string
+    @CurrentUser() user: AuthenticatedUser
   ): Promise<Playlist> {
+    const userId = user.sub
     return this.playlistService.update(input, playlistId, userId)
   }
 
-  @Get('users/:userId')
-  async findAllMyPlaylists(@Param('userId') userId: string): Promise<Playlist[]> {
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
+  @Get('users/me')
+  async findAllMyPlaylists(@CurrentUser() user: AuthenticatedUser): Promise<Playlist[]> {
+    const userId = user.sub
     return this.playlistService.findAllMyPlaylists(userId)
   }
 
+  @Public()
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
   @Get()
   async findAllPublic() {
     return this.playlistService.findAllPublic()
   }
 
+  @Public()
+  @Roles(UserRole.ADMIN, UserRole.DEFAULT)
   @Get(':playlistId')
   async findOnePublic(@Param('playlistId') playlistId: string) {
     return this.playlistService.findOnePublic(playlistId)
   }
 
-  @Delete(':playlistId/users/:userId')
-  async delete(@Param('playlistId') playlistId: string, @Param('userId') userId: string) {
+  @Delete(':playlistId/users/me')
+  async delete(@Param('playlistId') playlistId: string, @CurrentUser() user: AuthenticatedUser) {
+    const userId = user.sub
     return this.playlistService.delete(playlistId, userId)
   }
 }
