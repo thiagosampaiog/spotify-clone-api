@@ -1,12 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { UserService } from './user.service'
 import { User } from './contract/users.schema'
 import { UpdateUserDto } from './contract/user.dto'
-import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/role.decorator'
 import { UserRole } from '@app/common/guards/types/enums'
 
-@UseGuards(RolesGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}

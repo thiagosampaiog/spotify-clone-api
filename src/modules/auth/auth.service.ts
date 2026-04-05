@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { Body, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { UserService } from '../users/user.service'
 import { CreateUserDto } from '../users/contract/user.dto'
@@ -8,6 +8,8 @@ import { User } from '../users/contract/users.schema'
 import { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
 import authConfig from '@app/infra/config/auth.config'
 import type { ConfigType } from '@nestjs/config'
+import { Status } from '@app/common/guards/types/enums'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 
 @Injectable()
 export class AuthService {
@@ -22,28 +24,66 @@ export class AuthService {
     private readonly hashingProvider: HashingProvider
   ) {}
 
-  private async tokenGenerator(user: Omit<User, 'password'>) {
-    const payload = { sub: user._id, name: user.name, email: user.email, role: user.role }
-    return {
-      access_token: await this.jwtService.signAsync(payload, this.authConfiguration)
-    }
-  }
-
   public async signin(input: AuthLoginDto) {
     const { email, password } = input
+
     const user = await this.userService.findUserForLogin(email)
+
     if (!user) throw new UnauthorizedException('Invalid credentials')
+    if (user.status === Status.BANNED || user.status === Status.DELETED)
+      throw new UnauthorizedException('Invalid credentials')
+
     const isValidPassword = await this.hashingProvider.comparePassword(password, user.password)
+
     if (!isValidPassword) throw new UnauthorizedException('Invalid credentials')
-    return this.tokenGenerator(user)
+
+    return this.generateToken(user)
   }
 
   public async signup(input: CreateUserDto): Promise<any> {
-    const user = await this.userService.create(input)
-    return this.tokenGenerator(user)
+    return await this.userService.create(input)
+  }
+
+  public async refreshToken(input: RefreshTokenDto) {
+    try {
+      const { sub } = await this.jwtService.verifyAsync(input.refreshToken, {
+        secret: this.authConfiguration.secret,
+        audience: this.authConfiguration.audience,
+        issuer: this.authConfiguration.issuer
+      })
+
+      const user = await this.userService.findById(sub)
+
+      return await this.generateToken(user)
+    } catch (error) {
+      throw new UnauthorizedException(error)
+    }
   }
 
   public async me(user: AuthenticatedUser) {
     return this.userService.findUser(user.email)
+  }
+
+  private async signToken<T>(userId: string, expiresIn: number, payload?: T) {
+    return await this.jwtService.signAsync(
+      {
+        sub: userId,
+        ...payload
+      },
+      {
+        secret: this.authConfiguration.secret,
+        issuer: this.authConfiguration.issuer,
+        audience: this.authConfiguration.audience,
+        expiresIn: expiresIn
+      }
+    )
+  }
+
+  private async generateToken(user: User) {
+    const userId = user._id.toString()
+    const payload = { email: user.email, name: user.name, role: user.role }
+    const accessToken = await this.signToken(userId, this.authConfiguration.expiresIn, payload)
+    const refreshToken = await this.signToken(userId, this.authConfiguration.refreshTokenExpiresIn, payload)
+    return { access_token: accessToken, refreshToken }
   }
 }

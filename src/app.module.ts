@@ -23,7 +23,7 @@ const ENV = process.env.NODE_ENV
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env' : `.env.${ENV.trim()}`,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, databaseConfig, authConfig],
       validationSchema: envValidation
     }),
     DatabaseModule,

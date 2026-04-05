@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post } from '@nestjs/common'
 import { AlbumService } from './album.service'
 import { CreateAlbumDto, UpdateAlbumDto } from './contract/album.dto'
 import { Album } from './contract/album.schema'
-import { AuthGuard } from '@app/common/guards/auth.guard'
-import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/role.decorator'
 import { UserRole } from '@app/common/guards/types/enums'
 
-@UseGuards(AuthGuard, RolesGuard)
 @Controller('albums')
 export class AlbumController {
   constructor(

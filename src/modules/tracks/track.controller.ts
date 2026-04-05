@@ -1,14 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { TrackService } from './track.service'
 import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
 import { Track } from './contract/track.schema'
-import { AuthGuard } from '@app/common/guards/auth.guard'
-import { RolesGuard } from '@app/common/guards/roles.guard'
 import { UserRole } from '@app/common/guards/types/enums'
 import { Roles } from '@app/common/decorators/role.decorator'
 import { Public } from '@app/common/decorators/public.decorator'
 
-@UseGuards(AuthGuard, RolesGuard)
 @Controller('tracks')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}

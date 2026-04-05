@@ -1,16 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { PlaylistService } from './playlist.service'
 import { Playlist } from './contract/playlist.schema'
 import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
-import { AuthGuard } from '@app/common/guards/auth.guard'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
 import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
-import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Public } from '@app/common/decorators/public.decorator'
 import { Roles } from '@app/common/decorators/role.decorator'
 import { UserRole } from '@app/common/guards/types/enums'
 
-@UseGuards(AuthGuard, RolesGuard)
 @Controller('playlists')
 export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
