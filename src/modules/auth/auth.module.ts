@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { UserModule } from '../users/user.module'
 import { JwtModule } from '@nestjs/jwt'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config'
 import { HashingModule } from '@app/infra/hashing/hashing.module'
 import authConfig from '@app/infra/config/auth.config'
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => UserModule),
     HashingModule,
     ConfigModule.forFeature(authConfig),
     JwtModule.registerAsync(authConfig.asProvider())

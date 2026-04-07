@@ -15,6 +15,7 @@ import appConfig from './infra/config/app.config'
 import { AuthGuard } from './common/guards/auth.guard'
 import { JwtModule } from '@nestjs/jwt'
 import authConfig from './infra/config/auth.config'
+import { AuthModule } from './modules/auth/auth.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -33,6 +34,7 @@ const ENV = process.env.NODE_ENV
     TrackModule,
     PlaylistModule,
     LikeModule,
+    AuthModule,
     JwtModule.registerAsync(authConfig.asProvider())
   ],
   providers: [
