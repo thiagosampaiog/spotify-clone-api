@@ -15,6 +15,7 @@ export class UserService {
     private hashingProvider: HashingProvider
   ) {}
 
+  // test without sanitize
   private sanitize(user: User): Omit<User, 'password'> {
     const { password, ...rest } = user
     return rest
