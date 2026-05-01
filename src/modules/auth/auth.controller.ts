@@ -1,10 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { AuthLoginDto } from './dto/auth-login.dto'
-import { Public } from '@app/common/decorators/public.decorator'
+import { Public } from '@common/decorators/public.decorator'
 import { CreateUserDto } from '../users/contract/user.dto'
-import { CurrentUser } from '@app/common/decorators/current-user.decorator'
-import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
+import { CurrentUser } from '@common/decorators/current-user.decorator'
+import type { AuthenticatedUser } from '@common/types/jwt.constant'
 import { RefreshTokenDto } from './dto/refresh-token.dto'
 
 @Controller('auth')

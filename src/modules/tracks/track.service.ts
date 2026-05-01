@@ -13,8 +13,8 @@ import {
   POPULATE_SELECT,
   TRACK_DETAIL_SELECT,
   TRACK_LITE_SELECT
-} from '@app/common/guards/types/constants'
-import { Status } from '@app/common/guards/types/enums'
+} from '@common/types/constants'
+import { Status } from '@common/types/enums'
 import { Album } from '../albums/contract/album.schema'
 import { Artist } from '../artists/contract/artists.schema'
 

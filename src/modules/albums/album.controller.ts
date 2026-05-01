@@ -3,7 +3,7 @@ import { AlbumService } from './album.service'
 import { CreateAlbumDto, UpdateAlbumDto } from './contract/album.dto'
 import { Album } from './contract/album.schema'
 import { Roles } from '@app/common/decorators/role.decorator'
-import { UserRole } from '@app/common/guards/types/enums'
+import { UserRole } from '@common/types/enums'
 
 @Controller('albums')
 export class AlbumController {

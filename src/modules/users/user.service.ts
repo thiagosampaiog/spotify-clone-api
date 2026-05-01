@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose'
 import { User } from './contract/users.schema'
 import { Model } from 'mongoose'
 import { CreateUserDto, UpdateUserDto } from './contract/user.dto'
-import { ACTIVE_FILTER, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@app/common/guards/types/constants'
-import { Status } from '@app/common/guards/types/enums'
+import { ACTIVE_FILTER, USER_DETAIL_SELECT, USER_LITE_SELECT } from '@common/types/constants'
+import { Status } from '@common/types/enums'
 import { HashingProvider } from '../../infra/hashing/hashing.provider'
 
 @Injectable()

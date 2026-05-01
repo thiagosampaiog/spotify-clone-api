@@ -5,10 +5,10 @@ import { CreateUserDto } from '../users/contract/user.dto'
 import { AuthLoginDto } from './dto/auth-login.dto'
 import { HashingProvider } from '@app/infra/hashing/hashing.provider'
 import { User } from '../users/contract/users.schema'
-import { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
+import { AuthenticatedUser } from '@common/types/jwt.constant'
 import authConfig from '@app/infra/config/auth.config'
 import type { ConfigType } from '@nestjs/config'
-import { Status } from '@app/common/guards/types/enums'
+import { Status } from '@common/types/enums'
 import { RefreshTokenDto } from './dto/refresh-token.dto'
 
 @Injectable()

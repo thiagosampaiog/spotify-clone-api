@@ -3,9 +3,9 @@ import { UserService } from './user.service'
 import { User } from './contract/users.schema'
 import { UpdateUserDto } from './contract/user.dto'
 import { Roles } from '@app/common/decorators/role.decorator'
-import { UserRole } from '@app/common/guards/types/enums'
+import { UserRole } from '@common/types/enums'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
-import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
+import type { AuthenticatedUser } from '@common/types/jwt.constant'
 
 @Controller('users')
 export class UserController {

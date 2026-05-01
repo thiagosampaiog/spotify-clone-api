@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import { TrackService } from './track.service'
 import { CreateTrackDto, UpdateTrackDto } from './contract/track.dto'
 import { Track } from './contract/track.schema'
-import { UserRole } from '@app/common/guards/types/enums'
+import { UserRole } from '@common/types/enums'
 import { Roles } from '@app/common/decorators/role.decorator'
 import { Public } from '@app/common/decorators/public.decorator'
 

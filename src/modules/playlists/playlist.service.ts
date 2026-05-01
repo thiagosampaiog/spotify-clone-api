@@ -12,8 +12,8 @@ import {
   TRACK_LITE_SELECT,
   USER_DETAIL_SELECT,
   USER_LITE_SELECT
-} from '@app/common/guards/types/constants'
-import { Status } from '@app/common/guards/types/enums'
+} from '@common/types/constants'
+import { Status } from '@common/types/enums'
 import { User } from '../users/contract/users.schema'
 import { Track } from '../tracks/contract/track.schema'
 

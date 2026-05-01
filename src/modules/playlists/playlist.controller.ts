@@ -3,10 +3,10 @@ import { PlaylistService } from './playlist.service'
 import { Playlist } from './contract/playlist.schema'
 import { AddPlaylistTrackDto, CreatePlaylistDto, UpdatePlaylistDto } from './contract/playlist.dto'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
-import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
+import type { AuthenticatedUser } from '@common/types/jwt.constant'
 import { Public } from '@app/common/decorators/public.decorator'
 import { Roles } from '@app/common/decorators/role.decorator'
-import { UserRole } from '@app/common/guards/types/enums'
+import { UserRole } from '@common/types/enums'
 
 @Controller('playlists')
 export class PlaylistController {

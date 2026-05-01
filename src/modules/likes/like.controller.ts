@@ -2,7 +2,7 @@ import { Body, Controller, Inject, Param, Post } from '@nestjs/common'
 import { LikeService } from './like.service'
 import { ToggleLikeDto } from './contract/like.dto'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
-import type { AuthenticatedUser } from '@app/common/guards/types/jwt.constant'
+import type { AuthenticatedUser } from '@common/types/jwt.constant'
 
 @Controller('likes')
 export class LikeController {

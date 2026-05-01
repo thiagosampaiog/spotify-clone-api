@@ -4,7 +4,7 @@ import { ArtistsService } from './artist.service'
 import { CreateArtistDto, UpdateArtistDto } from './contract/artist.dto'
 import { Public } from '@app/common/decorators/public.decorator'
 import { Roles } from '@app/common/decorators/role.decorator'
-import { UserRole } from '@app/common/guards/types/enums'
+import { UserRole } from '@common/types/enums'
 
 @Controller('artists')
 export class ArtistsController {

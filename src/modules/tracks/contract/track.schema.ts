@@ -1,4 +1,4 @@
-import { Status } from '@app/common/guards/types/enums'
+import { Status } from '@common/types/enums'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import * as mongoose from 'mongoose'
 

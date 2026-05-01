@@ -1,4 +1,4 @@
-import { Status, UserRole } from '@app/common/guards/types/enums'
+import { Status, UserRole } from '@common/types/enums'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose, { HydratedDocument } from 'mongoose'
 
